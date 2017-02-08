@@ -42,7 +42,7 @@ class AccountTopMenu extends BaseMenu
             'sortOrder' => 200,
         ));
 
-        if (Yii::$app->user->isAdmin()) {
+        if (\humhub\modules\admin\widgets\AdminMenu::canAccess()) {
             $this->addItem(array(
                 'label' => '---',
                 'url' => '#',
@@ -65,12 +65,13 @@ class AccountTopMenu extends BaseMenu
 
         $this->addItem(array(
             'label' => Yii::t('base', 'Logout'),
+            'id' => 'account-logout',
             'icon' => '<i class="fa fa-sign-out"></i>',
+            'pjax' => false,
             'url' => Url::toRoute('/user/auth/logout'),
             'sortOrder' => 700,
         ));
 
         parent::init();
     }
-
 }

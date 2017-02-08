@@ -8,6 +8,8 @@
 
 namespace humhub\components;
 
+use Yii;
+
 /**
  * @inheritdoc
  */
@@ -18,6 +20,24 @@ class Application extends \yii\web\Application
      * @inheritdoc
      */
     public $controllerNamespace = 'humhub\\controllers';
+
+    /**
+     * @inheritdoc
+     */
+    public function bootstrap()
+    {
+        $request = $this->getRequest();
+
+        if (Yii::getAlias('@web-static', false) === false) {
+            Yii::setAlias('@web-static', $request->getBaseUrl() . '/static');
+        }
+
+        if (Yii::getAlias('@webroot-static', false) === false) {
+            Yii::setAlias('@webroot-static', '@webroot/static');
+        }
+        
+        parent::bootstrap();
+    }
 
     /**
      * @inheritdoc
