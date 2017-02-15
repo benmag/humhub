@@ -16,7 +16,7 @@ return [
                     'class' => 'humhub\modules\user\authclient\Facebook',
                     'clientId' => $_ENV['FACEBOOK_CLIENT_ID'],
                     'clientSecret' => $_ENV['FACEBOOK_CLIENT_SECRET'],
-                    'scope' => 'user_events, user_posts, user_managed_groups',
+                    'scope' => 'email, public_profile, user_events, user_posts, user_managed_groups',
                 ],
             ],
         ],
