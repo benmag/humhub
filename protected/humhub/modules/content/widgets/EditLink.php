@@ -8,6 +8,8 @@
 
 namespace humhub\modules\content\widgets;
 
+use humhub\libs\BasePermission;
+
 /**
  * Edit Link for Wall Entries
  *
@@ -23,26 +25,33 @@ class EditLink extends \yii\base\Widget
     /**
      * @var \humhub\modules\content\components\ContentActiveRecord
      */
-    public $content = null;
+    public $model = null;
 
     /**
-     * @var \humhub\modules\content\models\WallEntry
+     * @var string edit route.
      */
-    public $wallEntryWidget;
+    public $url;
+    
+    /**
+     * @var defines the edit type of the wallentry
+     */
+    public $mode;
+
 
     /**
      * Executes the widget.
      */
     public function run()
     {
-        $editUrl = $this->wallEntryWidget->getEditUrl();
+        if(!$this->url) {
+            return;
+        }
 
-        if ($editUrl !== "" && $this->content->content->canWrite()) {
-            return $this->render('editLink', array(
-                        'id' => $this->content->content->object_id,
-                        'content' => $this->content,
-                        'editUrl' => $editUrl
-            ));
+        if ($this->model->content->canEdit()) {
+            return $this->render('editLink', [
+                        'editUrl' => $this->url,
+                        'mode' => $this->mode
+            ]);
         }
     }
 

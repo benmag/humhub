@@ -1,11 +1,17 @@
 <?php
 
+/**
+ * @link https://www.humhub.org/
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
+ * @license https://www.humhub.com/licences
+ */
+
 return [
     // string, required, root directory of all source files
     'sourcePath' => __DIR__ . DIRECTORY_SEPARATOR . '..',
     // array, required, list of language codes that the extracted messages
     // should be translated to. For example, ['zh-CN', 'de'].
-    'languages' => array('de', 'fr', 'nl', 'pt', 'pl', 'pt_br', 'es', 'it', 'tr', 'ru', 'th', 'uk', 'el', 'hu', 'ja', 'nb_no', 'zh_cn', 'ca', 'an', 'cs', 'vi', 'sv', 'da', 'uz', 'fa_ir', 'bg', 'sk', 'zh_tw', 'ro', 'ar', 'id', 'ko', 'lt', 'hr', 'ht'),
+    'languages' => array('de', 'fr', 'nl', 'pt', 'pl', 'pt_br', 'es', 'it', 'tr', 'ru', 'th', 'uk', 'el', 'hu', 'ja', 'nb_no', 'zh_cn', 'ca', 'an', 'cs', 'vi', 'sv', 'da', 'uz', 'fa_ir', 'bg', 'sk', 'zh_tw', 'ro', 'ar', 'id', 'ko', 'lt', 'hr', 'ht', 'lv'),
     // string, the name of the function for translating messages.
     // Defaults to 'Yii::t'. This is used as a mark to find the messages to be
     // translated. You may use a string for single function name or an array for

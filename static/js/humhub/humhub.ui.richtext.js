@@ -50,6 +50,7 @@ humhub.module('ui.richtext', function(module, require, $) {
             }
 
             that.insertTextAtCursor(text);
+            that.fire('richtextPaste');
         }).on('keydown', function(e) {
             that.checkForEmptySpans();
         }).on('keypress', function(e) {
@@ -199,7 +200,7 @@ humhub.module('ui.richtext', function(module, require, $) {
     };
 
     Richtext.prototype.checkPlaceholder = function(focus) {
-        if(!focus && !this.$.text().trim().length) {
+        if(!focus && !this.$.text().trim().length && !this.$.find('[data-richtext-feature]').length) {
             this.$.addClass('atwho-placeholder');
             this.$.html(this.options.placeholder);
             this.$.attr('spellcheck', 'false');
@@ -329,7 +330,24 @@ humhub.module('ui.richtext', function(module, require, $) {
         var $clone = (options.clone) ? $element.clone() : $element;
         $clone.html(html);
         return $clone.text().trim();
-    }
+    };
+    
+    var _entityMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '=': '&#x3D;'
+    };
+    
+    var _escapeHtml = function(string) {
+            return String(string).replace(/[&<>"'=\/]/g, function(s) {
+                return _entityMap[s];
+            });
+        }
+    
 
     Richtext.features = {};
 

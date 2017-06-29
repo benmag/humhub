@@ -1,7 +1,6 @@
 <?php
 return array (
-  'Ok' => 'Ok',
-  'User has become a member.' => '',
-  'User has been invited.' => '',
-  'User has not been invited.' => '',
+  'User has become a member.' => 'Uživatel se stal členem.',
+  'User has been invited.' => 'Uživatel byl pozván.',
+  'User has not been invited.' => 'Uživatel nebyl pozván.',
 );

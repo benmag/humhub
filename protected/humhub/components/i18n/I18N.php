@@ -13,7 +13,7 @@ use humhub\models\forms\ChooseLanguage;
 
 /**
  * I18N provides features related with internationalization (I18N) and localization (L10N).
- * 
+ *
  * @inheritdoc
  */
 class I18N extends \yii\i18n\I18N
@@ -39,17 +39,19 @@ class I18N extends \yii\i18n\I18N
     /**
      * Sets the current locale for a given user.
      * If no user is given the currently logged in user will be used.
-     * 
+     *
      * @param \humhub\modules\user\models\User $user
      */
     public function setUserLocale($user)
     {
         if ($user === null) {
-            throw \yii\base\InvalidParamException("User cannot be null!");
+            throw new \yii\base\InvalidParamException('User cannot be null!');
         }
 
         if (!empty($user->language)) {
             Yii::$app->language = $user->language;
+        } else {
+            $this->setDefaultLocale();
         }
 
         if (!($user->time_zone)) {
@@ -62,8 +64,8 @@ class I18N extends \yii\i18n\I18N
 
     /**
      * Sets the locale for the current guest user.
-     * 
-     * The language is determined by the a cookie 
+     *
+     * The language is determined by the a cookie
      */
     public function setGuestLocale()
     {
@@ -93,6 +95,7 @@ class I18N extends \yii\i18n\I18N
     public function setDefaultLocale()
     {
         Yii::$app->language = Yii::$app->settings->get('defaultLanguage');
+
         $this->fixLocaleCodes();
     }
 
@@ -112,6 +115,9 @@ class I18N extends \yii\i18n\I18N
             $language = 'zh-TW';
         }
 
+        if ($language == 'nb_no' && $category == 'yii') {
+            $language = 'nb-NO';
+        }
 
         return parent::translate($category, $message, $params, $language);
     }
@@ -121,7 +127,6 @@ class I18N extends \yii\i18n\I18N
      */
     public function getMessageSource($category)
     {
-
         // Requested MessageSource already loaded
         if (isset($this->translations[$category]) && $this->translations[$category] instanceof \yii\i18n\MessageSource) {
             return $this->translations[$category];
@@ -148,7 +153,7 @@ class I18N extends \yii\i18n\I18N
 
     /**
      * Returns an array of allowed/available language codes
-     * 
+     *
      * @return array the allowed languages
      */
     public function getAllowedLanguages()
@@ -162,6 +167,7 @@ class I18N extends \yii\i18n\I18N
             }
             return $result;
         }
+
         return $availableLanguages;
     }
 
@@ -206,11 +212,11 @@ class I18N extends \yii\i18n\I18N
 
     /**
      * Returns the default translation category for a given moduleId.
-     * 
+     *
      * Examples:
      *      example -> ExampleModule.
      *      long_module_name -> LongModuleNameModule.
-     * 
+     *
      * @param string $moduleId
      * @return string Category Id
      */

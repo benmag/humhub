@@ -15,5 +15,11 @@ return array (
   'Posts only' => 'Solo entradas',
   'Posts with links' => 'Entradas con enlaces',
   'Sorting' => 'Ordenar',
+  'The content has been archived.' => 'Este contenido ha sido activado.',
+  'The content has been deleted.' => 'Este contenido ha sido borrado.',
+  'The content has been pinned.' => 'Este contenido ha sido fijado.',
+  'The content has been unarchived.' => 'Este contenido ha sido desarchivado.',
+  'The content has been unpinned.' => 'Este contenido ha sido desfijado.',
   'Where I´m involved' => 'En los que estoy involucrado',
+  'Your last edit state has been saved!' => 'Este contenido ha sido grabado.',
 );

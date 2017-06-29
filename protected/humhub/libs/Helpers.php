@@ -2,11 +2,13 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2016 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
 namespace humhub\libs;
+
+use yii\base\InvalidParamException;
 
 /**
  * This class contains a lot of html helpers for the views
@@ -24,7 +26,6 @@ class Helpers
      * */
     public static function truncateText($text, $length)
     {
-
         $length = abs((int) $length);
         if (strlen($text) > $length) {
             $text = preg_replace("/^(.{1,$length})(\s.*|$)/s", '\\1...', $text);
@@ -113,6 +114,8 @@ class Helpers
      *
      * @param String $val
      * @return int bytes
+     * @deprecated bug on PHP7 "A non well formed numeric value encountered"
+     * @see \humhub\libs\Helpers::getBytesOfIniValue instead
      */
     public static function GetBytesOfPHPIniValue($val)
     {
@@ -128,6 +131,34 @@ class Helpers
         }
 
         return $val;
+    }
+
+    /**
+     * Returns bytes of a PHP Ini Setting Value
+     * E.g. 10M will converted into 10485760
+     *
+     * Source: http://php.net/manual/en/function.ini-get.php#96996
+     *
+     * @param string $valueString
+     * @return int bytes
+     * @throws InvalidParamException
+     */
+    public static function getBytesOfIniValue($valueString)
+    {
+        if ($valueString === null || $valueString === "") {
+            return 0;
+        }
+
+        if ($valueString === false) {
+            throw new InvalidParamException('Your configuration option of ini_get function does not exist.');
+        }
+
+        switch (substr($valueString, -1)) {
+            case 'M': case 'm': return (int) $valueString * 1048576;
+            case 'K': case 'k': return (int) $valueString * 1024;
+            case 'G': case 'g': return (int) $valueString * 1073741824;
+            default: return (int) $valueString;
+        }
     }
 
     /**
@@ -150,7 +181,7 @@ class Helpers
     public static function CheckClassType($className, $type = "")
     {
         $className = preg_replace('/[^a-z0-9_\-\\\]/i', "", $className);
-        
+
         if (is_array($type)) {
             foreach ($type as $t) {
                 if (class_exists($className) && is_subclass_of($className, $t)) {
@@ -196,9 +227,32 @@ class Helpers
         if ($length !== ($mb ? mb_strlen($b, '8bit') : strlen($b)))
             return false;
         $check = 0;
-        for ($i = 0; $i < $length; $i+=1)
-            $check|=(ord($a[$i]) ^ ord($b[$i]));
+        for ($i = 0; $i < $length; $i += 1)
+            $check |= (ord($a[$i]) ^ ord($b[$i]));
         return $check === 0;
+    }
+
+    /**
+     * Set sql_mode=TRADITIONAL for mysql server.
+     *
+     * This static function is intended as closure for on afterOpen raised by yii\db\Connection and
+     * should be configured in dynamic.php like this: 'on afterOpen' => ['humhub\libs\Helpers', 'SqlMode'],
+     *
+     * This is mainly required for grouped notifications.
+     * 
+     * @since 1.2.1
+     * @param $event
+     */
+    public static function SqlMode($event)
+    {
+        /* set sql_mode only for mysql */
+        if ($event->sender->driverName == 'mysql') {
+            try {
+                $event->sender->createCommand('SET SESSION sql_mode=""; SET SESSION sql_mode="NO_ENGINE_SUBSTITUTION"')->execute();
+            } catch (\Exception $ex) {
+                Yii::error('Could not switch SQL mode: '. $ex->getMessage());
+            }
+        }
     }
 
 }

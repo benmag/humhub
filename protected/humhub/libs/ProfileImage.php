@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2016 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -129,12 +129,10 @@ class ProfileImage
      */
     public function cropOriginal($x, $y, $h, $w)
     {
-
         $image = imagecreatefromjpeg($this->getPath('_org'));
 
         // Create new destination Image
         $destImage = imagecreatetruecolor($this->width, $this->height);
-
 
         if (!imagecopyresampled($destImage, $image, 0, 0, $x, $y, $this->width, $this->height, $w, $h)) {
             return false;
@@ -157,8 +155,8 @@ class ProfileImage
 
         $this->delete();
         ImageConverter::TransformToJpeg($file, $this->getPath('_org'));
-        ImageConverter::Resize($this->getPath('_org'), $this->getPath('_org'), array('width' => 400, 'mode' => 'max'));
-        ImageConverter::Resize($this->getPath('_org'), $this->getPath(''), array('width' => $this->width, 'height' => $this->height));
+        ImageConverter::Resize($this->getPath('_org'), $this->getPath('_org'), ['width' => 800, 'mode' => 'max']);
+        ImageConverter::Resize($this->getPath('_org'), $this->getPath(''), ['width' => $this->width, 'height' => $this->height]);
     }
 
     /**
@@ -171,5 +169,3 @@ class ProfileImage
     }
 
 }
-
-?>

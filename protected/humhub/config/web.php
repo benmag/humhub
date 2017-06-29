@@ -1,9 +1,16 @@
 <?php
 
+/**
+ * @link https://www.humhub.org/
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
+ * @license https://www.humhub.com/licences
+ */
+
 $config = [
     'id' => 'humhub',
     'bootstrap' => ['humhub\components\bootstrap\LanguageSelector'],
-    'defaultRoute' => '/dashboard/dashboard',
+    'homeUrl' => ['/dashboard/dashboard'],
+    'defaultRoute' => '/home',
     'layoutPath' => '@humhub/views/layouts',
     'components' => [
         'request' => [

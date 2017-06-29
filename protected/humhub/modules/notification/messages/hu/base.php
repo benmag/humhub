@@ -17,6 +17,12 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    '{displayName} and {displayName2}' => '',
+    'In this view, you can define the default behavior for your users. These settings can be overwritten by users in their account settings page.' => '',
+    'Notifications are sent directly to your users to inform them about new activities in your network.' => '',
+    'Notifications are sent instantly to you to inform you about new activities in your network.' => '',
+    'This view allows you to configure your notification settings by selecting the desired targets for the given notification categories.' => '',
     '{displayName} and {number} others' => '',
+    '<strong>Notification</strong> Settings' => '<strong>Értesítések</strong> beállítása',
+    'Reset to defaults' => 'Alapbeállítások',
+    '{displayName} and {displayName2}' => '{displayName} és {displayName2}',
 ];

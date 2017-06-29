@@ -53,6 +53,31 @@ class Module extends \humhub\components\Module
     public $userListPaginationSize = 8;
 
     /**
+     * @var boolean allow admin users to modify user profile image and banner
+     * @since 1.2
+     * @see widgets\ProfileHeader
+     */
+    public $adminCanChangeUserProfileImages = false;
+
+    /**
+     * @var int minimum username length
+     * @since 1.2
+     */
+    public $minimumUsernameLength = 4;
+
+    /**
+     * @var callable a callback that returns the user displayName
+     * @since 1.2
+     */
+    public $displayNameCallback = null;
+    
+    /**
+     * @var boolean defines if the user following is disabled or not.
+     * @since 1.2 
+     */
+    public $disableFollow = false;
+
+    /**
      * @inheritdoc
      */
     public function getPermissions($contentContainer = null)

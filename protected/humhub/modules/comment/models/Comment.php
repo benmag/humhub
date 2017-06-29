@@ -2,17 +2,17 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2015 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
 namespace humhub\modules\comment\models;
 
+use Yii;
 use humhub\modules\post\models\Post;
-use \humhub\modules\content\interfaces\ContentOwner;
+use humhub\modules\content\interfaces\ContentOwner;
 use humhub\modules\comment\activities\NewComment;
 use humhub\modules\content\components\ContentAddonActiveRecord;
-use Yii;
 
 /**
  * This is the model class for table "comment".
@@ -76,7 +76,8 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
     public function beforeDelete()
     {
         $this->flushCache();
-        return parent::beforeDelete();
+
+		return parent::beforeDelete();
     }
 
     /**
@@ -89,7 +90,8 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
         } catch (\yii\base\Exception $ex) {
             ;
         }
-        parent::afterDelete();
+
+		parent::afterDelete();
     }
 
     /**
@@ -115,13 +117,16 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
 
         // Handle mentioned users
         // Execute before NewCommentNotification to avoid double notification when mentioned.
-        \humhub\modules\user\models\Mentioning::parse($this, $this->message);
+        $mentionedUsers = \humhub\modules\user\models\Mentioning::parse($this, $this->message);
 
         if ($insert) {
+            $followers = $this->getCommentedRecord()->getFollowers(null, true);
+            $this->filterMentionings($followers, $mentionedUsers);
+
             \humhub\modules\comment\notifications\NewComment::instance()
                     ->from(Yii::$app->user->getIdentity())
                     ->about($this)
-                    ->sendBulk($this->getCommentedRecord()->getFollowers(null, true, true));
+                    ->sendBulk($followers);
 
             if ($this->content->container) {
                 Yii::$app->live->send(new \humhub\modules\comment\live\NewComment([
@@ -139,6 +144,28 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
     }
 
     /**
+     * Filters out all users contained in $mentionedUsers from $followers
+     *
+     * @param User[] $followers
+     * @param User[] $mentionedUsers
+     */
+    private function filterMentionings(&$followers, $mentionedUsers)
+    {
+        if(empty($mentionedUsers)) {
+            return;
+        }
+
+        foreach($followers as $i => $follower) {
+            foreach($mentionedUsers as $mentioned) {
+                if($follower->is($mentioned)) {
+                    unset($followers[$i]);
+                    continue 2;
+                }
+            }
+        }
+    }
+
+    /**
      * Force search update of underlying content object.
      * (This has also indexed the comments.)
      */
@@ -151,7 +178,7 @@ class Comment extends ContentAddonActiveRecord implements ContentOwner
 
     /**
      * Returns the commented record e.g. a Post
-     * 
+     *
      * @return \humhub\modules\content\components\ContentActiveRecord
      */
     public function getCommentedRecord()

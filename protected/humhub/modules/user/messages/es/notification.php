@@ -17,7 +17,7 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'Mentioned' => '',
-    '{displayName} is now following you.' => '',
-    '{displayName} mentioned you in {contentTitle}.' => '',
+    '{displayName} is now following you.' => '{displayName} ahora te está siguiendo.',
+    '{displayName} just mentioned you in {contentTitle} "{preview}"' => '{displayName} te mencionó en {contentTitle} "{preview}"',
+    '{displayName} mentioned you in {contentTitle}.' => '{displayName} te mencionó en {contentTitle}.',
 ];

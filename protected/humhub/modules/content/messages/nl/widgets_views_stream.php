@@ -15,5 +15,11 @@ return array (
   'Posts only' => 'Alleen berichten',
   'Posts with links' => 'Berichten met links',
   'Sorting' => 'Sortering',
+  'The content has been archived.' => 'De inhoud is gearchiveerd.',
+  'The content has been deleted.' => 'De inhoud is verwijderd.',
+  'The content has been pinned.' => 'De inhoud is vastgezet.',
+  'The content has been unarchived.' => 'De inhoud is uit het archief gehaald.',
+  'The content has been unpinned.' => 'De inhoud is losgemaakt.',
   'Where I´m involved' => 'Waar ik bij betrokken ben',
+  'Your last edit state has been saved!' => 'Uw laatste bewerking is bewaard!',
 );

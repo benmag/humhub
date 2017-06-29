@@ -73,13 +73,13 @@ class PollController extends Controller
      */
     public function actionIndex()
     {
-        $lastSesstionTime = Yii::$app->session->get('live.poll.lastQueryTime');
+        $lastSessionTime = Yii::$app->session->get('live.poll.lastQueryTime');
         $lastQueryTime = $this->getLastQueryTime();
 
         $results = [];
         $results['queryTime'] = time();
         $results['lastQueryTime'] = $lastQueryTime;
-        $results['lastSessionTime'] = $lastSesstionTime;
+        $results['lastSessionTime'] = $lastSessionTime;
         $results['events'] = [];
 
         foreach ($this->buildLookupQuery($lastQueryTime)->all() as $live) {
@@ -185,7 +185,7 @@ class PollController extends Controller
         }
         
         if ($last + $this->maxTimeDecay < $currentTime) {
-            Yii::warning('User requested too old live data! Requested: ' . $last . ' Now: ' . $currentTime, 'live');
+            Yii::info('User requested too old live data! Requested: ' . $last . ' Now: ' . $currentTime, 'live');
             $last = $currentTime;
         }
 

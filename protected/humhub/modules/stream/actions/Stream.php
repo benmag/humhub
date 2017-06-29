@@ -10,6 +10,7 @@ namespace humhub\modules\stream\actions;
 
 use Yii;
 use yii\base\Action;
+use yii\base\Exception;
 use humhub\modules\content\models\Content;
 use humhub\modules\user\models\User;
 use humhub\modules\stream\models\StreamQuery;
@@ -20,7 +21,7 @@ use yii\base\ActionEvent;
  *
  * JSON output structure:
  *      content             - array, content id is key
- *           id             - int, id of content 
+ *           id             - int, id of content
  *           guid           - string, guid of content
  *           pinned         - boolean, is content pinned
  *           archived       - boolean, i scontent is archived
@@ -28,8 +29,8 @@ use yii\base\ActionEvent;
  *      total               - int, total of content records
  *      isLast              - boolean, is last content
  *      contentOrder        - array, list of content ids
- * 
- * 
+ *
+ *
  * @author luke
  * @since 0.11
  */
@@ -106,7 +107,7 @@ abstract class Stream extends Action
 
     /**
      * @var \yii\db\ActiveQuery
-     * 
+     *
      * @deprecated since version 1.2 use $streamQuery->query() instead
      */
     public $activeQuery;
@@ -121,32 +122,32 @@ abstract class Stream extends Action
 
     /**
      * Used to filter the stream content entrie classes against a given array.
-     * @var type 
+     * @var array
      * @since 1.2
      */
     public $includes = [];
 
     /**
      * Used to filter our specific types
-     * @var type 
+     * @var array
      * @since 1.2
      */
     public $excludes = [];
 
     /**
      * Stream query model instance
-     * @var type 
+     * @var \humhub\modules\stream\models\StreamSuppressQuery
      * @since 1.2
      */
     protected $streamQuery;
 
     /**
-     * @var string suppress similar content types in a row 
+     * @var string suppress similar content types in a row
      */
     public $streamQueryClass = 'humhub\modules\stream\models\StreamSuppressQuery';
 
     /**
-     * @inheritdocs
+     * @inheritdoc
      */
     public function init()
     {
@@ -172,6 +173,7 @@ abstract class Stream extends Action
 
         // Build query and set activeQuery.
         $this->activeQuery = $this->streamQuery->query(true);
+        $this->from = $this->streamQuery->from;
         $this->user = $this->streamQuery->user;
 
         // Update action filters with merged request and configured action filters.
@@ -198,7 +200,9 @@ abstract class Stream extends Action
 
         if ($this->mode == self::MODE_ACTIVITY) {
             $this->streamQuery->channel(StreamQuery::CHANNEL_ACTIVITY);
-            $this->streamQuery->query()->andWhere('content.created_by != :userId', [':userId' => $this->streamQuery->user->id]);
+            if ($this->streamQuery->user) {
+                $this->streamQuery->query()->andWhere('content.created_by != :userId', [':userId' => $this->streamQuery->user->id]);
+            }
         }
     }
 
@@ -219,8 +223,6 @@ abstract class Stream extends Action
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $output = [];
-
-        $this->init();
 
         $output['content'] = [];
 
@@ -253,7 +255,7 @@ abstract class Stream extends Action
 
     /**
      * Is inital stream requests (show first stream content)
-     * 
+     *
      * @return boolean Is initial request
      */
     protected function isInitialRequest()
@@ -262,11 +264,39 @@ abstract class Stream extends Action
     }
 
     /**
+     * Renders the wallEntry of the given ContentActiveRecord.
+     *
+     * If setting $partial to false this function will use the renderAjax function instead of renderPartial, which
+     * will directly append all dependencies to the result and if not used in a real ajax request will also append
+     * the Layoutadditions.
+     *
+     * @param \humhub\modules\content\components\ContentActiveRecord $record content record instance
+     * @param boolean $partial whether or not to use renderPartial over renderAjax
+     * @return string rendered wallentry
+     */
+    public static function renderEntry(\humhub\modules\content\components\ContentActiveRecord $record, $partial = true)
+    {
+        if ($partial) {
+            return Yii::$app->controller->renderPartial('@humhub/modules/content/views/layouts/wallEntry', [
+                        'content' => $record->getWallOut(),
+                        'entry' => $record->content
+            ]);
+        } else {
+            return Yii::$app->controller->renderAjax('@humhub/modules/content/views/layouts/wallEntry', [
+                        'content' => $record->getWallOut(),
+                        'entry' => $record->content
+            ]);
+        }
+    }
+
+    /**
      * Returns an array contains all informations required to display a content
      * in stream.
-     * 
+     *
      * @param Content $content the content
+     *
      * @return array
+     * @throws Exception
      */
     public static function getContentResultEntry(Content $content)
     {
@@ -275,7 +305,7 @@ abstract class Stream extends Action
         // Get Underlying Object (e.g. Post, Poll, ...)
         $underlyingObject = $content->getPolymorphicRelation();
         if ($underlyingObject === null) {
-            throw new Exception('Could not get contents underlying object!');
+            throw new Exception('Could not get contents underlying object! - contentid: ' . $content->id);
         }
 
         // Fix for newly created content
@@ -285,13 +315,8 @@ abstract class Stream extends Action
         }
 
         $underlyingObject->populateRelation('content', $content);
-        $result['output'] = Yii::$app->controller->renderAjax('@humhub/modules/content/views/layouts/wallEntry', [
-            'entry' => $content,
-            'user' => $underlyingObject->content->createdBy,
-            'object' => $underlyingObject,
-            'content' => $underlyingObject->getWallOut()
-                ], true);
 
+        $result['output'] = self::renderEntry($underlyingObject, false);
         $result['pinned'] = (boolean) $content->pinned;
         $result['archived'] = (boolean) $content->archived;
         $result['guid'] = $content->guid;

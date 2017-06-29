@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2016 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -11,6 +11,8 @@ namespace humhub\modules\content\widgets;
 use Yii;
 use humhub\components\Widget;
 use humhub\modules\space\models\Space;
+use humhub\modules\user\models\User;
+use humhub\modules\content\components\ContentContainerController;
 
 /**
  * WallEntry is responsible to show a content inside a stream/wall.
@@ -21,6 +23,21 @@ use humhub\modules\space\models\Space;
  */
 class WallEntry extends Widget
 {
+
+    /**
+     * Edit form is loaded to the wallentry itself.
+     */
+    const EDIT_MODE_INLINE = 'inline';
+
+    /**
+     * Opens the edit page in a new window.
+     */
+    const EDIT_MODE_NEW_WINDOW = 'new_window';
+
+    /**
+     * Edit form is loaded into a modal.
+     */
+    const EDIT_MODE_MODAL = 'modal';
 
     /**
      * The content object
@@ -44,6 +61,13 @@ class WallEntry extends Widget
     public $editRoute = "";
 
     /**
+     * Defines the way the edit of this wallentry is displayed.
+     * 
+     * @var type 
+     */
+    public $editMode = self::EDIT_MODE_INLINE;
+
+    /**
      * The wall entry layout to use
      * 
      * @var string
@@ -51,6 +75,7 @@ class WallEntry extends Widget
     public $wallEntryLayout = "@humhub/modules/content/widgets/views/wallEntry.php";
 
     /**
+     * @deprecated since version 1.2 use file model 'show_in_stream' attribute instead
      * @var boolean show files widget containing a list of all assigned files
      */
     public $showFiles = true;
@@ -66,7 +91,7 @@ class WallEntry extends Widget
             /* @var $widget Widget */
             $config['class'] = get_called_class();
             $widget = Yii::createObject($config);
-            $out = $widget->render($widget->wallEntryLayout, ['content' => $widget->run(), 'object' => $widget->contentObject, 'wallEntryWidget' => $widget]);
+            $out = $widget->render($widget->wallEntryLayout, $widget->getWallEntryViewParams());
         } catch (\Exception $e) {
             ob_end_clean();
             throw $e;
@@ -82,16 +107,48 @@ class WallEntry extends Widget
      */
     public function getEditUrl()
     {
-        if ($this->editRoute === "") {
-            return "";
+        if (empty($this->editRoute)) {
+            return;
         }
 
         // Don't show edit link, when content container is space and archived
         if ($this->contentObject->content->container instanceof Space && $this->contentObject->content->container->status == Space::STATUS_ARCHIVED) {
             return "";
         }
-        
-        return $this->contentObject->content->container->createUrl($this->editRoute, ['id' => $this->contentObject->id]); 
+
+        return $this->contentObject->content->container->createUrl($this->editRoute, ['id' => $this->contentObject->id]);
+    }
+
+    /**
+     * Returns an array of contextmenu items either in form of a single array:
+     * 
+     * ['label' => 'mylabel', icon => 'fa-myicon', 'data-action-click' => 'myaction', ...]
+     * 
+     * or as widget type definition:
+     * 
+     * [MyWidget::class, [...], [...]]
+     * 
+     * If an $editRoute is set this function will include an edit button.
+     * The edit logic can be changed by changing the $editMode.
+     * 
+     * @return array
+     * @since 1.2
+     */
+    public function getContextMenu()
+    {
+        $result = [];
+        if (!empty($this->getEditUrl())) {
+            $result[] = [EditLink::class, ['model' => $this->contentObject, 'mode' => $this->editMode, 'url' => $this->getEditUrl()], ['sortOrder' => 200]];
+        }
+
+        $result[] = [DeleteLink::className(), ['content' => $this->contentObject], ['sortOrder' => 100]];
+        $result[] = [VisibilityLink::className(), ['contentRecord' => $this->contentObject], ['sortOrder' => 250]];
+        $result[] = [NotificationSwitchLink::className(), ['content' => $this->contentObject], ['sortOrder' => 300]];
+        $result[] = [PermaLink::className(), ['content' => $this->contentObject], ['sortOrder' => 400]];
+        $result[] = [PinLink::className(), ['content' => $this->contentObject], ['sortOrder' => 500]];
+        $result[] = [ArchiveLink::className(), ['content' => $this->contentObject], ['sortOrder' => 600]];
+
+        return $result;
     }
 
     /**
@@ -105,17 +162,49 @@ class WallEntry extends Widget
         ob_start();
         ob_implicit_flush(false);
         try {
-            $out = $this->render($this->wallEntryLayout, [
-                'content' => $this->run(),
-                'object' => $this->contentObject,
-                'wallEntryWidget' => $this
-            ]);
+            $out = $this->render($this->wallEntryLayout, $this->getWallEntryViewParams());
         } catch (\Exception $e) {
             ob_end_clean();
             throw $e;
         }
 
         return ob_get_clean() . $out;
+    }
+
+    /**
+     * Returns the view paramters for the wall entry layout
+     * 
+     * @return array the view parameter array
+     */
+    public function getWallEntryViewParams()
+    {
+        $showContentContainer = false;
+        $content = $this->contentObject->content;
+        $user = $content->createdBy;
+        $container = $content->container;
+
+        // In case of e.g. dashboard, show contentContainer of this content
+        if (!Yii::$app->controller instanceof ContentContainerController && !($container instanceof User && $container->id == $user->id)) {
+            $showContentContainer = true;
+        }
+
+        $createdAt = $content->created_at;
+        $updatedAt = null;
+        // Note this won't work if updated_at is of type yii/db/Expression (NOW()) in this case the content has to be refreshed manually.
+        if ($createdAt !== $content->updated_at && !empty($content->updated_at) && is_string($content->updated_at)) {
+            $updatedAt = $content->updated_at;
+        }
+
+        return [
+            'content' => $this->run(),
+            'object' => $this->contentObject,
+            'wallEntryWidget' => $this,
+            'showContentContainer' => $showContentContainer,
+            'user' => $user,
+            'container' => $container,
+            'createdAt' => $createdAt,
+            'updatedAt' => $updatedAt
+        ];
     }
 
 }

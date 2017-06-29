@@ -7,6 +7,7 @@ humhub.module('action', function(module, require, $) {
     var object = require('util').object;
     var string = require('util').string;
     var loader = require('ui.loader');
+    var modal = require('ui.modal', true);
 
     var BLOCK_NONE = 'none';
     var BLOCK_SYNC = 'sync';
@@ -16,6 +17,8 @@ humhub.module('action', function(module, require, $) {
     var DATA_COMPONENT = 'action-component';
     
     module.initOnPjax = true;
+    
+    var processes = {};
 
     var Component = function(node, options) {
         if(!node) {
@@ -140,7 +143,7 @@ humhub.module('action', function(module, require, $) {
     };
 
     /**
-     * Creates an component instance out of the given node.
+     * Creates a component instance out of the given node.
      * @param {type} node
      * @param {type} options
      * @returns {undefined}
@@ -215,7 +218,6 @@ humhub.module('action', function(module, require, $) {
             Component._buildSelector();
             //Binding default action types
             this.bindAction(document, 'click', '[data-action-click]');
-            this.bindAction(document, 'dblclick', '[data-action-dblclick]');
             this.bindAction(document, 'change', '[data-action-change]');
         }
 
@@ -257,6 +259,10 @@ humhub.module('action', function(module, require, $) {
             });
             $targets.data('action-' + binding.event, true);
         });
+    };
+    
+    var getProcessTrigger = function(id) {
+        return processes[id];
     };
 
     /**
@@ -312,11 +318,37 @@ humhub.module('action', function(module, require, $) {
     ActionBinding.prototype.handle = function(options) {
         var options = options || {};
         var $trigger = options.$trigger;
+        
+        if(this.data($trigger, 'process')) {
+            processes[this.data($trigger, 'process')] = $trigger;
+        }
+
+        
 
         if(options.originalEvent) {
             options.originalEvent.preventDefault();
         }
 
+        module.log.debug('Handle Action', this);
+
+        var event = this.createActionEvent(options);
+
+        if(object.isDefined(this.data($trigger, 'confirm')) && !options.confirmed) {
+            var that = this;
+            modal.confirm($trigger).then(function(confirmed) {
+                if(confirmed) {
+                    options.confirmed = true;
+                    that.handle(options);
+                } else {
+                    event.finish();
+                }
+            });
+            return;
+        }
+        
+        // Reset value just to get sure the options are not reused.
+        options.confirmed = undefined;
+        
         if(this.isBlocked($trigger)) {
             module.log.warn('Blocked action execution ', $trigger);
             return;
@@ -325,10 +357,6 @@ humhub.module('action', function(module, require, $) {
         if(this.isBlockAction($trigger)) {
             this.block($trigger);
         }
-
-        module.log.debug('Handle Action', this);
-
-        var event = this.createActionEvent(options);
 
         try {
             // Check for a direct action handler
@@ -415,16 +443,16 @@ humhub.module('action', function(module, require, $) {
      * @param {type} $trigger
      * @param {type} name
      * @param {type} def
-     * @returns {unresolved}
+     * @returns {mixed}
      */
     ActionBinding.prototype.data = function($trigger, name, def) {
         var result = $trigger.data('action-' + this.eventType + '-' + name);
 
-        if(!result) {
+        if(!object.isDefined(result)) {
             result = $trigger.data('action-' + name);
         }
 
-        return result || def;
+        return object.isDefined(result) ? result : def;
     };
 
     ActionBinding.prototype.getUrl = function($trigger) {
@@ -508,6 +536,10 @@ humhub.module('action', function(module, require, $) {
         event.finish = function() {
             _removeLoaderFromEventTarget(event.originalEvent);
             that.unblock($trigger);
+        };
+        
+        event.data = function(key, def) {
+            return that.data($trigger, key, def);
         };
 
         return event;
@@ -606,6 +638,7 @@ humhub.module('action', function(module, require, $) {
         registerHandler: registerHandler,
         Component: Component,
         trigger: trigger,
+        getProcessTrigger: getProcessTrigger,
         BLOCK_NONE: BLOCK_NONE,
         BLOCK_SYNC: BLOCK_SYNC,
         BLOCK_ASYNC: BLOCK_ASYNC,

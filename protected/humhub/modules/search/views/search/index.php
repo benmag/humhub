@@ -7,8 +7,10 @@ use humhub\modules\search\models\forms\SearchForm;
 use humhub\modules\content\components\ContentActiveRecord;
 use humhub\modules\content\components\ContentContainerActiveRecord;
 
+humhub\modules\stream\assets\StreamAsset::register($this);
+
 ?>
-<div class="container">
+<div class="container" data-action-component="stream.SimpleStream">
     <div class="row">
         <div class="col-md-12">
             <div class="panel">
@@ -19,7 +21,8 @@ use humhub\modules\content\components\ContentContainerActiveRecord;
                         <div class="col-md-6">
                             <?php $form = ActiveForm::begin(['action' => Url::to(['index']), 'method' => 'GET']); ?>
                                 <div class="form-group form-group-search">
-                                    <?= $form->field($model, 'keyword')->textInput(['placeholder' => Yii::t('SearchModule.views_search_index', 'Search for user, spaces and content'), 'class' => 'form-control form-search', 'id' => 'search-input-field'])->label(false); ?>
+                                    <?= $form->field($model, 'keyword')->textInput(['placeholder' => Yii::t('SearchModule.views_search_index', 'Search for user, spaces and content'), 
+                                        'title' => Yii::t('SearchModule.views_search_index', 'Search for user, spaces and content'), 'class' => 'form-control form-search', 'id' => 'search-input-field'])->label(false); ?>
                                     <?php echo Html::submitButton(Yii::t('base', 'Search'), ['class' => 'btn btn-default btn-sm form-button-search', 'data-ui-loader' => '']); ?>
                                 </div>
 
@@ -58,7 +61,7 @@ use humhub\modules\content\components\ContentContainerActiveRecord;
                     <div
                         class="panel-heading"><?php echo Yii::t('SearchModule.views_search_index', '<strong>Search </strong> results'); ?></div>
                     <div class="list-group">
-                        <a href='<?php echo Url::to(['/search/search/index', 'keyword' => $model->keyword, 'limitSpaceGuids' => $model->limitSpaceGuids, 'scope' => SearchForm::SCOPE_ALL]); ?>'
+                        <a data-pjax-prevent href='<?php echo Url::to(['/search/search/index', 'SearchForm[keyword]' => $model->keyword, 'SearchForm[limitSpaceGuids]' => $model->limitSpaceGuids, 'SearchForm[scope]' => SearchForm::SCOPE_ALL]); ?>'
                            class="list-group-item <?php if ($model->scope == SearchForm::SCOPE_ALL): ?>active<?php endif; ?>">
                             <div>
                                 <div class="edit_group "><?php echo Yii::t('SearchModule.views_search_index', 'All'); ?>
@@ -67,7 +70,7 @@ use humhub\modules\content\components\ContentContainerActiveRecord;
                             </div>
                         </a>
                         <br/>
-                        <a href='<?php echo Url::to(['/search/search/index', 'keyword' => $model->keyword, 'limitSpaceGuids' => $model->limitSpaceGuids, 'scope' => SearchForm::SCOPE_CONTENT]); ?>'
+                        <a data-pjax-prevent href='<?php echo Url::to(['/search/search/index', 'SearchForm[keyword]' => $model->keyword, 'SearchForm[limitSpaceGuids]' => $model->limitSpaceGuids, 'SearchForm[scope]' => SearchForm::SCOPE_CONTENT]); ?>'
                            class="list-group-item <?php if ($model->scope == SearchForm::SCOPE_CONTENT): ?>active<?php endif; ?>">
                             <div>
                                 <div
@@ -76,7 +79,7 @@ use humhub\modules\content\components\ContentContainerActiveRecord;
                                 </div>
                             </div>
                         </a>
-                        <a href='<?php echo Url::to(['/search/search/index', 'keyword' => $model->keyword, 'limitSpaceGuids' => $model->limitSpaceGuids, 'scope' => SearchForm::SCOPE_USER]); ?>'
+                        <a data-pjax-prevent href='<?php echo Url::to(['/search/search/index', 'SearchForm[keyword]' => $model->keyword, 'SearchForm[limitSpaceGuids]' => $model->limitSpaceGuids, 'SearchForm[scope]' => SearchForm::SCOPE_USER]); ?>'
                            class="list-group-item <?php if ($model->scope == SearchForm::SCOPE_USER): ?>active<?php endif; ?>">
                             <div>
                                 <div
@@ -85,7 +88,7 @@ use humhub\modules\content\components\ContentContainerActiveRecord;
                                 </div>
                             </div>
                         </a>
-                        <a href='<?php echo Url::to(['/search/search/index', 'keyword' => $model->keyword, 'limitSpaceGuids' => $model->limitSpaceGuids, 'scope' => SearchForm::SCOPE_SPACE]); ?>'
+                        <a data-pjax-prevent href='<?php echo Url::to(['/search/search/index', 'SearchForm[keyword]' => $model->keyword, 'SearchForm[limitSpaceGuids]' => $model->limitSpaceGuids, 'SearchForm[scope]' => SearchForm::SCOPE_SPACE]); ?>'
                            class="list-group-item <?php if ($model->scope == SearchForm::SCOPE_SPACE): ?>active<?php endif; ?>">
                             <div>
                                 <div
@@ -104,9 +107,10 @@ use humhub\modules\content\components\ContentContainerActiveRecord;
 
                     <?php if (count($results) > 0): ?>
                         <?php foreach ($results as $result): ?>
-
-                            <?php if ($result instanceof ContentActiveRecord || $result instanceof ContentContainerActiveRecord) : ?>
-                                <?php echo $result->getWallOut(); ?>
+                            <?php if ($result instanceof ContentActiveRecord) : ?>
+                                <?= humhub\modules\stream\actions\Stream::renderEntry($result) ?>
+                            <?php elseif ($result instanceof ContentContainerActiveRecord) : ?>
+                                 <?= $result->getWallOut(); ?>
                             <?php else: ?>
                                 No Output for Class <?php echo get_class($result); ?>
                             <?php endif; ?>

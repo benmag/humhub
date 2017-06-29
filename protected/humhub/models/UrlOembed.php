@@ -1,9 +1,14 @@
 <?php
 
+/**
+ * @link https://www.humhub.org/
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
+ * @license https://www.humhub.com/licences
+ */
+
 namespace humhub\models;
 
 use Yii;
-
 
 /**
  * This is the model class for table "url_oembed".
@@ -30,7 +35,7 @@ class UrlOembed extends \yii\db\ActiveRecord
         return [
             [['url', 'preview'], 'required'],
             [['preview'], 'string'],
-            [['url'], 'string', 'max' => 255]
+            [['url'], 'string', 'max' => 180],
         ];
     }
 
@@ -47,21 +52,21 @@ class UrlOembed extends \yii\db\ActiveRecord
 
     /**
      * Returns OEmbed Code for a given URL
-     *
      * If no oembed code is found, null is returned
      *
-     * @param type $url
+     * @param string $url
+     *
+     * @return null|string
      */
     public static function GetOEmbed($url)
     {
-
         $url = trim($url);
 
         // Check if the given URL has OEmbed Support
         if (UrlOembed::HasOEmbedSupport($url)) {
 
             // Lookup Cached OEmebed Item from Datbase
-            $urlOembed = UrlOembed::findOne(['url'=>$url]);
+            $urlOembed = UrlOembed::findOne(['url' => $url]);
             if ($urlOembed !== null) {
                 return $urlOembed->preview;
             } else {
@@ -69,23 +74,22 @@ class UrlOembed extends \yii\db\ActiveRecord
             }
         }
 
-
         return null;
     }
 
     /**
      * Prebuilds oembeds for all urls in a given text
      *
-     * @param type $text
+     * @param string|array $text
      */
     public static function preload($text)
     {
-        preg_replace_callback('/http(.*?)(\s|$)/i', function($match) {
+        preg_replace_callback('/http(.*?)(\s|$)/i', function ($match) {
 
             $url = $match[0];
 
             // Already looked up?
-            if (UrlOembed::findOne(['url'=>$url]) !== null) {
+            if (UrlOembed::findOne(['url' => $url]) !== null) {
                 return;
             }
             UrlOembed::loadUrl($url);
@@ -95,12 +99,12 @@ class UrlOembed extends \yii\db\ActiveRecord
     /**
      * Loads OEmbed Data from a given URL and writes them to the database
      *
-     * @param type $url
+     * @param string $url
+     *
      * @return string
      */
     public static function loadUrl($url)
     {
-
         $urlOembed = new UrlOembed();
         $urlOembed->url = $url;
         $html = "";
@@ -111,8 +115,8 @@ class UrlOembed extends \yii\db\ActiveRecord
             if ($jsonOut != "") {
                 try {
                     $data = \yii\helpers\Json::decode($jsonOut);
-                    if (isset($data['type']) && ($data['type'] === "video" || $data['type'] === 'rich' || $data['type'] === 'photo')) {
-                        $html = "<div class='oembed_snippet' data-url='" . \yii\helpers\Html::encode($url) . "'>" . $data['html'] . "</div>";
+                    if (isset($data['html']) && isset($data['type']) && ($data['type'] === "video" || $data['type'] === 'rich' || $data['type'] === 'photo')) {
+                        $html = "<div data-guid='".uniqid('oembed-')."' data-richtext-feature class='oembed_snippet' data-url='" . \yii\helpers\Html::encode($url) . "'>" . $data['html'] . "</div>";
                     }
                 } catch (\yii\base\InvalidParamException $ex) {
                     Yii::warning($ex->getMessage());
@@ -144,7 +148,8 @@ class UrlOembed extends \yii\db\ActiveRecord
     /**
      * Checks if a given URL Supports OEmbed
      *
-     * @param type $url
+     * @param string $url
+     *
      * @return boolean
      */
     public static function HasOEmbedSupport($url)
@@ -154,14 +159,16 @@ class UrlOembed extends \yii\db\ActiveRecord
                 return true;
             }
         }
+
         return false;
     }
 
     /**
      * Fetches a given URL and returns content
      *
-     * @param type $url
-     * @return type
+     * @param string $url
+     *
+     * @return mixed|boolean
      */
     public static function fetchUrl($url)
     {
@@ -189,6 +196,7 @@ class UrlOembed extends \yii\db\ActiveRecord
         }
         $return = curl_exec($curl);
         curl_close($curl);
+
         return $return;
     }
 
@@ -203,7 +211,8 @@ class UrlOembed extends \yii\db\ActiveRecord
         if ($providers != "") {
             return \yii\helpers\Json::decode($providers);
         }
-        return array();
+
+        return [];
     }
 
     /**

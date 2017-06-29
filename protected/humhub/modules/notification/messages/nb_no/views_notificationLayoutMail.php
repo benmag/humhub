@@ -1,5 +1,4 @@
 <?php
 return array (
-  'see online' => 'Se online',
-  'via' => 'gjennom',
+  'View online:' => 'Se online:',
 );

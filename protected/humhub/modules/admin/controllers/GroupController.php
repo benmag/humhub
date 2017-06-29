@@ -34,10 +34,14 @@ class GroupController extends Controller
     {
         $this->subLayout = '@admin/views/layouts/user';
         $this->appendPageTitle(Yii::t('AdminModule.base', 'Groups'));
+
         return parent::init();
     }
 
-    public static function getAccessRules()
+    /**
+     * @inheritdoc
+     */
+    public function getAccessRules()
     {
         return [
             ['permissions' => \humhub\modules\admin\permissions\ManageGroups::className()]
@@ -52,10 +56,10 @@ class GroupController extends Controller
         $searchModel = new \humhub\modules\admin\models\GroupSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        return $this->render('index', array(
-                    'dataProvider' => $dataProvider,
-                    'searchModel' => $searchModel
-        ));
+        return $this->render('index', [
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel
+        ]);
     }
 
     /**
@@ -76,15 +80,18 @@ class GroupController extends Controller
         if ($group->load(Yii::$app->request->post()) && $group->validate() && $group->save()) {
             $this->view->saved();
             if ($wasNew) {
-                return $this->redirect(['/admin/group/manage-group-users', 'id' => $group->id]);
+                return $this->redirect([
+                    '/admin/group/manage-group-users',
+                    'id' => $group->id
+                ]);
             }
         }
 
         return $this->render('edit', [
-                    'group' => $group,
-                    'showDeleteButton' => (!$group->isNewRecord && !$group->is_admin_group),
-                    'isCreateForm' => $group->isNewRecord,
-                    'isManagerApprovalSetting' => Yii::$app->getModule('user')->settings->get('auth.needApproval')
+            'group' => $group,
+            'showDeleteButton' => (!$group->isNewRecord && !$group->is_admin_group),
+            'isCreateForm' => $group->isNewRecord,
+            'isManagerApprovalSetting' => Yii::$app->getModule('user')->settings->get('auth.needApproval')
         ]);
     }
 
@@ -103,9 +110,7 @@ class GroupController extends Controller
             return [];
         }
 
-        return $this->render('permissions', [
-                    'group' => $group
-        ]);
+        return $this->render('permissions', ['group' => $group]);
     }
 
     public function actionManageGroupUsers()
@@ -115,11 +120,11 @@ class GroupController extends Controller
         $searchModel->query = $group->getUsers();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         return $this->render('members', [
-                    'dataProvider' => $dataProvider,
-                    'searchModel' => $searchModel,
-                    'group' => $group,
-                    'addGroupMemberForm' => new AddGroupMemberForm(),
-                    'isManagerApprovalSetting' => Yii::$app->getModule('user')->settings->get('auth.needApproval')
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel,
+            'group' => $group,
+            'addGroupMemberForm' => new AddGroupMemberForm(),
+            'isManagerApprovalSetting' => Yii::$app->getModule('user')->settings->get('auth.needApproval')
         ]);
     }
 
@@ -128,13 +133,16 @@ class GroupController extends Controller
         $this->forcePostRequest();
         $group = Group::findOne(['id' => Yii::$app->request->get('id')]);
         $group->removeUser(Yii::$app->request->get('userId'));
-        
+
         if(Yii::$app->request->isAjax) {
             Yii::$app->response->format = 'json';
             return ['success' => true];
         }
-        
-        return $this->redirect(['/admin/group/manage-group-users', 'id' => $group->id]);
+
+        return $this->redirect([
+            '/admin/group/manage-group-users',
+            'id' => $group->id
+        ]);
     }
 
     /**
@@ -192,7 +200,11 @@ class GroupController extends Controller
         if ($form->load(Yii::$app->request->post()) && $form->validate()) {
             $form->save();
         }
-        return $this->redirect(['/admin/group/manage-group-users', 'id' => $form->groupId]);
+
+        return $this->redirect([
+            '/admin/group/manage-group-users',
+            'id' => $form->groupId
+        ]);
     }
 
     public function actionNewMemberSearch()
@@ -204,16 +216,17 @@ class GroupController extends Controller
 
         $subQuery = (new \yii\db\Query())->select('*')->from(GroupUser::tableName(). ' g')->where([
                     'and', 'g.user_id=user.id', ['g.group_id' => $group->id]]);
-        
+
         $query = User::find()->where(['not exists', $subQuery]);
-        
+
         $result = UserPicker::filter([
-                    'keyword' => $keyword,
-                    'query' => $query,
-                    'fillUser' => true,
-                    'fillUserQuery' => $group->getUsers(),
-                    'disabledText' => Yii::t('AdminModule.controllers_GroupController', 'User is already a member of this group.')
+            'keyword' => $keyword,
+            'query' => $query,
+            'fillUser' => true,
+            'fillUserQuery' => $group->getUsers(),
+            'disabledText' => Yii::t('AdminModule.controllers_GroupController', 'User is already a member of this group.')
         ]);
+
         return $result;
     }
 
@@ -225,10 +238,10 @@ class GroupController extends Controller
         $group = Group::findOne(Yii::$app->request->get('id'));
 
         return UserPicker::filter([
-                    'query' => $group->getUsers(),
-                    'keyword' => $keyword,
-                    'fillQuery' => User::find(),
-                    'disableFillUser' => false
+            'query' => $group->getUsers(),
+            'keyword' => $keyword,
+            'fillQuery' => User::find(),
+            'disableFillUser' => false
         ]);
     }
 

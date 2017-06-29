@@ -20,9 +20,9 @@ return [
     'About' => '',
     'Add purchased module by licence key' => '',
     'Admin' => '',
-    'Administration' => '',
     'Approval' => '',
     'Authentication' => '',
+    'Back to overview' => '',
     'Basic' => '',
     'Caching' => '',
     'Cronjobs' => '',
@@ -41,4 +41,5 @@ return [
     'User posts' => '',
     'Userprofiles' => '',
     'Users' => '',
+    'Administration' => 'Administrasyon',
 ];

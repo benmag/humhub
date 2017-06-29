@@ -34,3 +34,5 @@ favicon.ico
 /.buildpath
 /.project
 /protected/vendor/
+
+storage/*

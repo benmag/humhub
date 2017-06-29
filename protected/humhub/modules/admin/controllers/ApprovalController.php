@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2016 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -33,15 +33,19 @@ class ApprovalController extends Controller
     {
         $this->subLayout = '@admin/views/layouts/user';
         $this->appendPageTitle(Yii::t('AdminModule.base', 'Approval'));
+
         return parent::init();
     }
-    
-    public static function getAccessRules()
+
+    /**
+     * @inheritdoc
+     */
+    public function getAccessRules()
     {
         return [
             ['permissions' => [
-                    ManageUsers::className(),
-                    ManageGroups::className()
+                ManageUsers::className(),
+                ManageGroups::className()
             ]]
         ];
     }
@@ -67,10 +71,10 @@ class ApprovalController extends Controller
         $searchModel = new \humhub\modules\admin\models\UserApprovalSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        return $this->render('index', array(
-                    'dataProvider' => $dataProvider,
-                    'searchModel' => $searchModel
-        ));
+        return $this->render('index', [
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel
+        ]);
     }
 
     public function actionApprove()
@@ -81,7 +85,7 @@ class ApprovalController extends Controller
             throw new HttpException(404, Yii::t('AdminModule.controllers_ApprovalController', 'User not found!'));
 
         $model = new ApproveUserForm;
-        $model->subject = Yii::t('AdminModule.controllers_ApprovalController', "Account Request for '{displayName}' has been approved.", array('{displayName}' => Html::encode($user->displayName)));
+        $model->subject = Yii::t('AdminModule.controllers_ApprovalController', "Account Request for '{displayName}' has been approved.", ['{displayName}' => Html::encode($user->displayName)]);
         $model->message = Yii::t('AdminModule.controllers_ApprovalController', 'Hello {displayName},<br><br>
 
    your account has been activated.<br><br>
@@ -90,11 +94,11 @@ class ApprovalController extends Controller
    <a href=\'{loginURL}\'>{loginURL}</a><br><br>
 
    Kind Regards<br>
-   {AdminName}<br><br>', array(
+   {AdminName}<br><br>', [
                     '{displayName}' => Html::encode($user->displayName),
                     '{loginURL}' => urldecode(Url::to(["/user/auth/login"], true)),
                     '{AdminName}' => Yii::$app->user->getIdentity()->displayName,
-        ));
+        ]);
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             $model->send($user->email);
@@ -104,7 +108,10 @@ class ApprovalController extends Controller
             return $this->redirect(['index']);
         }
 
-        return $this->render('approve', ['model' => $user, 'approveFormModel' => $model]);
+        return $this->render('approve', [
+            'model' => $user,
+            'approveFormModel' => $model
+        ]);
     }
 
     public function actionDecline()
@@ -116,7 +123,7 @@ class ApprovalController extends Controller
             throw new HttpException(404, Yii::t('AdminModule.controllers_ApprovalController', 'User not found!'));
 
         $model = new ApproveUserForm;
-        $model->subject = Yii::t('AdminModule.controllers_ApprovalController', 'Account Request for \'{displayName}\' has been declined.', array('{displayName}' => Html::encode($user->displayName)));
+        $model->subject = Yii::t('AdminModule.controllers_ApprovalController', 'Account Request for \'{displayName}\' has been declined.', ['{displayName}' => Html::encode($user->displayName)]);
         $model->message = Yii::t('AdminModule.controllers_ApprovalController', 'Hello {displayName},<br><br>
 
    your account request has been declined.<br><br>
@@ -133,9 +140,10 @@ class ApprovalController extends Controller
             return $this->redirect(['index']);
         }
 
-        return $this->render('decline', ['model' => $user, 'approveFormModel' => $model]);
+        return $this->render('decline', [
+            'model' => $user,
+            'approveFormModel' => $model
+        ]);
     }
 
 }
-
-?>

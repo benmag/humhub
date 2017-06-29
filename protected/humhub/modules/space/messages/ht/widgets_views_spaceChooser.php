@@ -19,5 +19,9 @@
 return [
     'Create new space' => '',
     'My spaces' => '',
-    'Search' => '',
+    'No member or following spaces found.' => '',
+    'No result found for the given filter.' => '',
+    'Search for spaces' => '',
+    'To search for other spaces, type at least {count} characters.' => '',
+    'Search' => 'Chèche',
 ];

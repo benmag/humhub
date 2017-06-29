@@ -1,7 +1,7 @@
 <?php
 return array (
   'Back to stream' => 'Tilbake til nyhetsstrøm',
-  'Content with attached files' => 'Innlegg med tilknyttede filer',
+  'Content with attached files' => 'Innlegg med filer',
   'Created by me' => 'Opprettet av meg',
   'Creation time' => 'Opprettet',
   'Filter' => 'Filter',
@@ -15,5 +15,11 @@ return array (
   'Posts only' => 'Kun innlegg',
   'Posts with links' => 'Innlegg med linker',
   'Sorting' => 'Sorter',
+  'The content has been archived.' => 'Innholdet er arkivert.',
+  'The content has been deleted.' => 'Innhodlet er slettet.',
+  'The content has been pinned.' => 'Innholdet er pinnet.',
+  'The content has been unarchived.' => 'Innholdet er hentet tilbake fra arkivet.',
+  'The content has been unpinned.' => 'Pin er fjernet.',
   'Where I´m involved' => 'Hvor jeg er involvert',
+  'Your last edit state has been saved!' => 'Din siste redigerte versjon er lagret!',
 );

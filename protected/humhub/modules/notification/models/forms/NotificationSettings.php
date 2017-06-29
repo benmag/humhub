@@ -3,7 +3,7 @@
 namespace humhub\modules\notification\models\forms;
 
 use Yii;
-use humhub\modules\space\models\Space;
+use humhub\modules\notification\targets\BaseTarget;
 
 /**
  * Description of NotificationSettings
@@ -37,7 +37,7 @@ class NotificationSettings extends \yii\base\Model
     public $desktopNotifications;
 
     /**
-     * @var NotificationTarget[] 
+     * @var BaseTarget[] 
      */
     protected $_targets;
 
@@ -52,8 +52,10 @@ class NotificationSettings extends \yii\base\Model
             $this->spaceGuids = array_map(function ($space) {
                 return $space->guid;
             }, $spaces);
+        } else {
+            $this->spaceGuids = Yii::$app->getModule('notification')->settings->getSerialized('sendNotificationSpaces');
         }
-        
+
         $this->desktopNotifications = Yii::$app->notification->getDesktopNoficationSettings($this->user);
 
         $module = Yii::$app->getModule('notification');
@@ -100,7 +102,7 @@ class NotificationSettings extends \yii\base\Model
     }
 
     /**
-     * @return NotificationTargets[] NotificationTargets enabled for this user (or global)
+     * @return BaseTarget[] the notification targets enabled for this user (or global)
      */
     public function targets()
     {
@@ -146,7 +148,7 @@ class NotificationSettings extends \yii\base\Model
         if (!$this->validate()) {
             return false;
         }
-        
+
         $this->saveSpaceSettings();
         Yii::$app->notification->setDesktopNoficationSettings($this->desktopNotifications, $this->user);
         Yii::$app->notification->setSpaces($this->spaceGuids, $this->user);
@@ -231,7 +233,7 @@ class NotificationSettings extends \yii\base\Model
                 $settings->delete($target->getSettingKey($category));
             }
         }
-        Yii::$app->notification->setSpaces($this->user, []);
+        Yii::$app->notification->setSpaces([], $this->user);
         return true;
     }
 

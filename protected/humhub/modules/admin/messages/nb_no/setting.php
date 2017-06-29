@@ -17,16 +17,15 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'Advanced Settings' => '',
-    'Appearance Settings' => '',
-    'E-Mail Settings' => '',
-    'General' => '',
-    'General Settings' => '',
-    'Here you can configurate the e-mail behaviour and mail-server settings of your social network.' => '',
     'Here you can configurate the registration behaviour and additinal user settings of your social network.' => '',
     'Here you can configure basic settings of your social network.' => '',
     'LDAP' => '',
+    'Notification Settings' => '',
     'These settings refer to advanced topics of your social network.' => '',
     'These settings refer to the appearance of your social network.' => '',
     'User Settings' => '',
+    'Advanced Settings' => 'Avanserte innstillinger',
+    'Appearance Settings' => 'Utseende innstillinger ',
+    'General' => 'Generelt',
+    'General Settings' => 'Generelle innstillinger ',
 ];

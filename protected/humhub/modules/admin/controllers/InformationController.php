@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2015 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -14,12 +14,12 @@ use humhub\modules\admin\libs\HumHubAPI;
 
 /**
  * Informations
- * 
+ *
  * @since 0.5
  */
 class InformationController extends Controller
 {
-    
+
     /**
      * @inheritdoc
      */
@@ -35,8 +35,11 @@ class InformationController extends Controller
         $this->subLayout = '@admin/views/layouts/information';
         return parent::init();
     }
-    
-    public static function getAccessRules()
+
+    /**
+     * @inheritdoc
+     */
+    public function getAccessRules()
     {
         return [
             ['permissions' => \humhub\modules\admin\permissions\SeeAdminInformation::className()]
@@ -55,12 +58,12 @@ class InformationController extends Controller
             $isUpToDate = !$isNewVersionAvailable;
         }
 
-        return $this->render('about', array(
-                    'currentVersion' => Yii::$app->version,
-                    'latestVersion' => $latestVersion,
-                    'isNewVersionAvailable' => $isNewVersionAvailable,
-                    'isUpToDate' => $isUpToDate
-        ));
+        return $this->render('about', [
+            'currentVersion' => Yii::$app->version,
+            'latestVersion' => $latestVersion,
+            'isNewVersionAvailable' => $isNewVersionAvailable,
+            'isUpToDate' => $isUpToDate
+        ]);
     }
 
     public function actionPrerequisites()
@@ -78,7 +81,6 @@ class InformationController extends Controller
      */
     public function actionCronjobs()
     {
-
         $currentUser = '';
         if (function_exists('get_current_user')) {
             $currentUser = get_current_user();
@@ -89,9 +91,9 @@ class InformationController extends Controller
 
 
         return $this->render('cronjobs', [
-                    'lastRunHourly' => $lastRunHourly,
-                    'lastRunDaily' => $lastRunDaily,
-                    'currentUser' => $currentUser
+            'lastRunHourly' => $lastRunHourly,
+            'lastRunDaily' => $lastRunDaily,
+            'currentUser' => $currentUser
         ]);
     }
 

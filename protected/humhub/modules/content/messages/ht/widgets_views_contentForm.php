@@ -18,9 +18,10 @@
  */
 return [
     'Add a member to notify' => '',
+    'Content visibility' => '',
     'Make private' => '',
     'Make public' => '',
     'Notify members' => '',
     'Public' => '',
-    'What\'s on your mind?' => '',
+    'This space is archived.' => '',
 ];

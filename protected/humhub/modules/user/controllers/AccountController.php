@@ -13,6 +13,8 @@ use yii\web\HttpException;
 use humhub\modules\user\components\BaseAccountController;
 use humhub\modules\user\models\User;
 use humhub\modules\notification\models\forms\NotificationSettings;
+use humhub\modules\user\controllers\ImageController;
+
 /**
  * AccountController provides all standard actions for the current logged in
  * user account.
@@ -23,6 +25,9 @@ use humhub\modules\notification\models\forms\NotificationSettings;
 class AccountController extends BaseAccountController
 {
 
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         $this->setActionTitles([
@@ -115,7 +120,12 @@ class AccountController extends BaseAccountController
             return $this->redirect(['edit-settings']);
         }
 
-        return $this->render('editSettings', array('model' => $model, 'languages' => Yii::$app->i18n->getAllowedLanguages()));
+        // Sort countries list based on user language   
+        $languages = Yii::$app->i18n->getAllowedLanguages();
+        $col = new \Collator(Yii::$app->language);
+        $col->asort($languages);
+
+        return $this->render('editSettings', array('model' => $model, 'languages' => $languages));
     }
 
     /**
@@ -147,11 +157,11 @@ class AccountController extends BaseAccountController
         // Handle permission state change
         if (Yii::$app->request->post('dropDownColumnSubmit')) {
             Yii::$app->response->format = 'json';
-            $permission = $this->user->permissionManager->getById(Yii::$app->request->post('permissionId'), Yii::$app->request->post('moduleId'));
+            $permission = $this->getUser()->permissionManager->getById(Yii::$app->request->post('permissionId'), Yii::$app->request->post('moduleId'));
             if ($permission === null) {
                 throw new HttpException(500, 'Could not find permission!');
             }
-            $this->user->permissionManager->setGroupState($currentGroup, $permission, Yii::$app->request->post('state'));
+            $this->getUser()->permissionManager->setGroupState($currentGroup, $permission, Yii::$app->request->post('state'));
             return [];
         }
 
@@ -214,7 +224,12 @@ class AccountController extends BaseAccountController
             $user->enableModule($moduleId);
         }
 
-        return $this->redirect(['/user/account/edit-modules']);
+        if (!Yii::$app->request->isAjax) {
+            return $this->redirect(['/user/account/edit-modules']);
+        } else {
+            Yii::$app->response->format = 'json';
+            return ['success' => true];
+        }
     }
 
     public function actionDisableModule()
@@ -228,7 +243,12 @@ class AccountController extends BaseAccountController
             $user->disableModule($moduleId);
         }
 
-        return $this->redirect(['/user/account/edit-modules']);
+        if (!Yii::$app->request->isAjax) {
+            return $this->redirect(['/user/account/edit-modules']);
+        } else {
+            Yii::$app->response->format = 'json';
+            return ['success' => true];
+        }
     }
 
     /**
@@ -267,22 +287,7 @@ class AccountController extends BaseAccountController
     }
 
     /**
-     * Notification Mailing Settings
-     */
-    public function actionNotification()
-    {
-        $form = new NotificationSettings(['user' => Yii::$app->user->getIdentity()]);
-
-        if ($form->load(Yii::$app->request->post()) && $form->save()) {
-            $this->view->saved();
-        }
-
-        return $this->render('notification', ['model' => $form]);
-    }
-
-    /**
      * Change Current Password
-     *
      */
     public function actionChangeEmail()
     {
@@ -356,129 +361,57 @@ class AccountController extends BaseAccountController
 
     /**
      * Crops the banner image of the user
+     * @deprecated since version 1.2
      */
     public function actionCropBannerImage()
     {
-        $model = new \humhub\models\forms\CropProfileImage();
-        $profileImage = new \humhub\libs\ProfileBannerImage($this->getUser()->guid);
-
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $profileImage->cropOriginal($model->cropX, $model->cropY, $model->cropH, $model->cropW);
-            return $this->htmlRedirect($this->getUser()->getUrl());
-        }
-
-        return $this->renderAjax('cropBannerImage', ['model' => $model, 'profileImage' => $profileImage, 'user' => $this->getUser()]);
+        return Yii::$app->runAction('/user/image/crop', ['type' => ImageController::TYPE_PROFILE_BANNER_IMAGE]);
     }
 
     /**
      * Handle the banner image upload
+     * 
+     * @deprecated since version 1.2
      */
     public function actionBannerImageUpload()
     {
-        \Yii::$app->response->format = 'json';
-
-        $model = new \humhub\models\forms\UploadProfileImage();
-        $json = array();
-
-        $files = \yii\web\UploadedFile::getInstancesByName('bannerfiles');
-        $file = $files[0];
-        $model->image = $file;
-
-        if ($model->validate()) {
-            $profileImage = new \humhub\libs\ProfileBannerImage($this->getUser()->guid);
-            $profileImage->setNew($model->image);
-
-            $json['error'] = false;
-            $json['name'] = "";
-            $json['url'] = $profileImage->getUrl();
-            $json['size'] = $model->image->size;
-            $json['deleteUrl'] = "";
-            $json['deleteType'] = "";
-        } else {
-            $json['error'] = true;
-            $json['errors'] = $model->getErrors();
+        // Ensure view file backward compatibility prior 1.2
+        if (isset($_FILES['bannerfiles'])) {
+            $_FILES['images'] = $_FILES['bannerfiles'];
         }
-
-        return ['files' => $json];
+        return Yii::$app->runAction('/user/image/upload', ['type' => ImageController::TYPE_PROFILE_BANNER_IMAGE]);
     }
 
     /**
      * Handle the profile image upload
+     * 
+     * @deprecated since version 1.2
      */
     public function actionProfileImageUpload()
     {
-        \Yii::$app->response->format = 'json';
-
-        $model = new \humhub\models\forms\UploadProfileImage();
-
-        $json = array();
-
-        $files = \yii\web\UploadedFile::getInstancesByName('profilefiles');
-        $file = $files[0];
-        $model->image = $file;
-
-        if ($model->validate()) {
-
-            $json['error'] = false;
-
-            $profileImage = new \humhub\libs\ProfileImage($this->getUser()->guid);
-            $profileImage->setNew($model->image);
-
-            $json['name'] = "";
-            $json['url'] = $profileImage->getUrl();
-            $json['size'] = $model->image->size;
-            $json['deleteUrl'] = "";
-            $json['deleteType'] = "";
-        } else {
-            $json['error'] = true;
-            $json['errors'] = $model->getErrors();
+        // Ensure view file backward compatibility prior 1.2
+        if (isset($_FILES['profilefiles'])) {
+            $_FILES['images'] = $_FILES['profilefiles'];
         }
-
-        return array('files' => $json);
+        return Yii::$app->runAction('/user/image/upload', ['type' => ImageController::TYPE_PROFILE_IMAGE]);
     }
 
     /**
      * Crops the profile image of the user
+     * @deprecated since version 1.2
      */
     public function actionCropProfileImage()
     {
-        $model = new \humhub\models\forms\CropProfileImage();
-        $profileImage = new \humhub\libs\ProfileImage($this->getUser()->guid);
-
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $profileImage->cropOriginal($model->cropX, $model->cropY, $model->cropH, $model->cropW);
-            return $this->htmlRedirect($this->getUser()->getUrl());
-        }
-
-        return $this->renderAjax('cropProfileImage', array('model' => $model, 'profileImage' => $profileImage, 'user' => $this->getUser()));
+        return Yii::$app->runAction('/user/image/crop', ['type' => ImageController::TYPE_PROFILE_IMAGE]);
     }
 
     /**
      * Deletes the profile image or profile banner
+     * @deprecated since version 1.2
      */
     public function actionDeleteProfileImage()
     {
-        \Yii::$app->response->format = 'json';
-
-        $this->forcePostRequest();
-
-        $type = Yii::$app->request->get('type', 'profile');
-
-        $json = array('type' => $type);
-
-        $image = null;
-        if ($type == 'profile') {
-            $image = new \humhub\libs\ProfileImage($this->getUser()->guid);
-        } elseif ($type == 'banner') {
-            $image = new \humhub\libs\ProfileBannerImage($this->getUser()->guid);
-        }
-
-        if ($image) {
-            $image->delete();
-            $json['defaultUrl'] = $image->getUrl();
-        }
-
-        return $json;
+        return Yii::$app->runAction('/user/image/delete', ['type' => (Yii::$app->request->get('type', 'profile') == 'profile') ? ImageController::TYPE_PROFILE_IMAGE : ImageController::TYPE_PROFILE_BANNER_IMAGE]);
     }
 
     /**

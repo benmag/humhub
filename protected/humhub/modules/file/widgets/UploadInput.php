@@ -4,6 +4,7 @@ namespace humhub\modules\file\widgets;
 
 use Yii;
 use yii\helpers\Html;
+use humhub\widgets\JsWidget;
 
 /**
  * The file input will upload files either to the given $url or to the default
@@ -18,10 +19,10 @@ use yii\helpers\Html;
  * @package humhub.modules_core.file.widgets
  * @since 1.2
  */
-class UploadInput extends \humhub\widgets\JsWidget
+class UploadInput extends JsWidget
 {
 
-    const DEFAULT_FORM_NAME = 'guids[]';
+    const DEFAULT_FORM_NAME = 'fileList';
 
     /**
      * javascript widget implementation.
@@ -44,7 +45,7 @@ class UploadInput extends \humhub\widgets\JsWidget
     public $model;
 
     /**
-     * Can be used to overwrite the default result input name guids[] with a model
+     * Can be used to overwrite the default result input name files[] with a model
      * bound attribute formName.
      * 
      * @var string 
@@ -52,12 +53,19 @@ class UploadInput extends \humhub\widgets\JsWidget
     public $attribute;
 
     /**
-     * Can be used to overwrite the default result input name guids[] with a model
+     * Can be used to overwrite the default result input name files[] with a model
      * bound attribute formName.
      * 
      * @var string 
      */
     public $name;
+    
+    /**
+     * Defines the input name of the submitted array field containing the result guids.
+     * 
+     * @var string 
+     */
+    public $submitName;
 
     /**
      * Can be set if the upload button is not contained in the form itself.
@@ -74,7 +82,7 @@ class UploadInput extends \humhub\widgets\JsWidget
     public $url;
 
     /**
-     * Maximum amount of allowed uploads.
+     * Total number of maximum amount of allowed file uploads.
      * @var type 
      */
     public $max;
@@ -103,6 +111,14 @@ class UploadInput extends \humhub\widgets\JsWidget
      * @var type 
      */
     public $visible = false;
+    
+        
+    /**
+     * This flag can be used in order to only allow a single guid to be submitted.
+     * Note that already attached files have to be removed manually.
+     * @var boolean 
+     */
+    public $single = false;
 
     /**
      * Draws the Upload Button output.
@@ -115,14 +131,23 @@ class UploadInput extends \humhub\widgets\JsWidget
     public function getAttributes()
     {
         return [
-            'multiple' => 'multiple'
+            'multiple' => 'multiple',
+            'title' => Yii::t('base', 'Upload file')
         ];
     }
 
     public function getData()
     {
         $formSelector = ($this->form instanceof \yii\widgets\ActiveForm) ? '#' + $this->form->getId() : $this->form;
-        $resultFieldName = ($this->model && $this->attribute) ? $this->model->formName() + '[' + $this->attribute + '][]' : self::DEFAULT_FORM_NAME;
+        
+        if($this->submitName) {
+            $submitName = $this->submitName;
+        } else {
+            $submitName = ($this->model && $this->attribute) ? $this->model->formName() . '[' . $this->attribute . ']' : self::DEFAULT_FORM_NAME;
+            if(!$this->single) {
+                $submitName .= '[]';
+            }
+        }
 
         $result = [
             'upload-url' => $this->url,
@@ -130,13 +155,17 @@ class UploadInput extends \humhub\widgets\JsWidget
             'upload-progress' => $this->progress,
             'upload-preview' => $this->preview,
             'upload-form' => $formSelector,
-            'result-field-name' => $resultFieldName
+            'upload-single' => $this->single,
+            'upload-submit-name' => $submitName
         ];
         
         if ($this->model) {
             $result['upload-model'] = $this->model->className();
             $result['upload-model-id'] = $this->model->getPrimaryKey();
         }
+
+        $result['php-max-file-uploads'] = ini_get('max_file_uploads');
+        $result['php-max-file-uploads-message'] = Yii::t('FileModule.widgets_UploadInput', 'Sorry, you can only upload up to {n,plural,=1{# file} other{# files}} at once.', ['n' => $result['php-max-file-uploads']]);
 
         if ($this->max) {
             $result['max-number-of-files'] = $this->max;

@@ -79,8 +79,6 @@
 
 [data-ui-markdown] {
     
-    word-break: break-all;
-    
     h1, h2, h3, h4, h5, h6 {
         text-align: start;
         margin: 0 0 0.5em;
@@ -196,6 +194,10 @@
     ul, ol {
         margin-top: 0;
         margin-bottom: 10.5px;
+        li p {
+            // otherwise single list items p hides the marker
+            overflow:visible !important;
+        }
     }
     
     .footnote {

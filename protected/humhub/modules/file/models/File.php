@@ -59,7 +59,7 @@ class File extends FileCompat
     {
         return [
             [['mime_type'], 'string', 'max' => 150],
-            [['mime_type'], 'match', 'not' => true, 'pattern' => '/[^a-zA-Z0-9\.ä\/\-]/', 'message' => Yii::t('FileModule.base', 'Invalid Mime-Type')],
+            [['mime_type'], 'match', 'not' => true, 'pattern' => '/[^a-zA-Z0-9\.ä\/\-\+]/', 'message' => Yii::t('FileModule.base', 'Invalid Mime-Type')],
             [['file_name', 'title'], 'string', 'max' => 255],
             [['size'], 'integer'],
         ];
@@ -136,12 +136,13 @@ class File extends FileCompat
     /**
      * Checks if given file can deleted.
      *
-     * If the file is not an instance of HActiveRecordContent or HActiveRecordContentAddon
+     * If the file is not an instance of ContentActiveRecord or ContentAddonActiveRecord
      * the file is readable for all unless there is method canWrite or canDelete implemented.
      */
     public function canDelete($userId = "")
     {
         $object = $this->getPolymorphicRelation();
+
         if ($object != null) {
             if ($object instanceof ContentAddonActiveRecord) {
                 return $object->canWrite($userId);
@@ -185,6 +186,17 @@ class File extends FileCompat
         }
 
         return $this->_store;
+    }
+    
+    /**
+     * Returns all attached Files of the given $record.
+     * 
+     * @param \yii\db\ActiveRecord $record
+     * @return File[]
+     */
+    public static function findByRecord(\yii\db\ActiveRecord $record)
+    {
+        return self::findAll(['object_model' => $record->className(), 'object_id' => $record->getPrimaryKey()]);
     }
 
 }

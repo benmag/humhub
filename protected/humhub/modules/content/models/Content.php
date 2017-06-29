@@ -9,6 +9,7 @@
 namespace humhub\modules\content\models;
 
 use Yii;
+use humhub\modules\user\components\PermissionManager;
 use yii\base\Exception;
 use yii\helpers\Url;
 use humhub\modules\user\models\User;
@@ -16,6 +17,7 @@ use humhub\modules\space\models\Space;
 use humhub\modules\content\components\ContentActiveRecord;
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\modules\content\permissions\ManageContent;
+use yii\rbac\Permission;
 
 /**
  * This is the model class for table "content".
@@ -33,6 +35,7 @@ use humhub\modules\content\permissions\ManageContent;
  * @property integer $created_by
  * @property string $updated_at
  * @property integer $updated_by
+ * @property ContentContainer $contentContainer
  *
  * @since 0.5
  */
@@ -42,7 +45,7 @@ class Content extends ContentDeprecated
     /**
      * A array of user objects which should informed about this new content.
      *
-     * @var Array User
+     * @var array User
      */
     public $notifyUsersOfNewContent = [];
 
@@ -179,7 +182,7 @@ class Content extends ContentDeprecated
 
                 \humhub\modules\content\activities\ContentCreated::instance()
                         ->about($contentSource)->save();
-               
+
 
                 Yii::$app->live->send(new \humhub\modules\content\live\NewContent([
                     'sguid' => ($this->container instanceof Space) ? $this->container->guid : null,
@@ -220,18 +223,23 @@ class Content extends ContentDeprecated
     }
 
     /**
-     * Returns the public state of the contect object
+     * Checks if the content visiblity is set to public.
      *
      * @return boolean
      */
     public function isPublic()
     {
+        return $this->visibility == self::VISIBILITY_PUBLIC;
+    }
 
-        if ($this->visibility == self::VISIBILITY_PUBLIC) {
-            return true;
-        }
-
-        return false;
+    /**
+     * Checks if the content visiblity is set to private.
+     *
+     * @return boolean
+     */
+    public function isPrivate()
+    {
+        return $this->visibility == self::VISIBILITY_PRIVATE;
     }
 
     /**
@@ -409,13 +417,18 @@ class Content extends ContentDeprecated
     }
 
     /**
-     * Checks if user can edit this content
+     * Checks if the given user can edit this content.
      *
-     * @todo create possibility to define own canEdit in ContentActiveRecord
-     * @todo also check content containers canManage content permission
+     * A user can edit a content if one of the following conditions are met:
+     *
+     *  - User is the owner of the content
+     *  - User is system administrator and the content module setting `adminCanEditAllContent` is set to true (default)
+     *  - The user is granted the managePermission set by the model record class
+     *  - The user meets the additional condition implemented by the model records class own `canEdit()` function.
+     *
      * @since 1.1
      * @param User $user
-     * @return boolean can edit this content
+     * @return bool can edit this content
      */
     public function canEdit($user = null)
     {
@@ -432,12 +445,22 @@ class Content extends ContentDeprecated
             return true;
         }
 
-        if ($this->getContainer()->permissionManager->can(new ManageContent())) {
+        // Global Admin can edit/delete arbitrarily content
+        if (Yii::$app->getModule('content')->adminCanEditAllContent && $user->isSystemAdmin()) {
             return true;
         }
 
-        // Global Admin can edit/delete arbitrarily content
-        if (Yii::$app->getModule('content')->adminCanEditAllContent && Yii::$app->user->getIdentity()->isSystemAdmin()) {
+        /* @var $model ContentActiveRecord */
+        $model = $this->getPolymorphicRelation();
+
+        // Check additional manage permission for the given container
+        if ($model->hasManagePermission() && $this->getContainer() && $this->getContainer()->getPermissionManager($user)->can($model->getManagePermission())) {
+            return true;
+        }
+
+        // Check if underlying models canEdit implementation
+        // ToDo: Implement this as interface
+        if (method_exists($model, 'canEdit') && $model->canEdit($user)) {
             return true;
         }
 
@@ -445,7 +468,23 @@ class Content extends ContentDeprecated
     }
 
     /**
-     * Checks if user can view this content
+     * Checks the given $permission of the current user in the contents content container.
+     * This is short for `$this->getContainer()->getPermissionManager()->can()`.
+     *
+     * @param $permission
+     * @param array $params
+     * @param bool $allowCaching
+     * @see PermissionManager::can()
+     * @since 1.2.1
+     * @return bool
+     */
+    public function can($permission, $params = [], $allowCaching = true)
+    {
+        return $this->getContainer()->getPermissionManager()->can($permission, $params, $allowCaching);
+    }
+
+    /**
+     * Checks if user can view this content.
      *
      * @since 1.1
      * @param User $user
@@ -453,37 +492,51 @@ class Content extends ContentDeprecated
      */
     public function canView($user = null)
     {
-        if ($user === null && !Yii::$app->user->isGuest) {
+        if (!$user && !Yii::$app->user->isGuest) {
             $user = Yii::$app->user->getIdentity();
         }
 
         // Check Guest Visibility
-        if ($user === null) {
-            if (Yii::$app->getModule('user')->settings->get('auth.allowGuestAccess') && $this->visibility === self::VISIBILITY_PUBLIC) {
-                // Check container visibility for guests
-                if (($this->container instanceof Space && $this->container->visibility == Space::VISIBILITY_ALL) ||
-                        ($this->container instanceof User && $this->container->visibility == User::VISIBILITY_ALL)) {
-                    return true;
-                }
-            }
-            return false;
+        if (!$user) {
+            return $this->checkGuestAccess();
         }
 
         // Public visible content
-        if ($this->visibility === self::VISIBILITY_PUBLIC) {
+        if ($this->isPublic()) {
             return true;
         }
 
-        // Check Superadmin can see all content option
+        // Check system admin can see all content module configuration
         if ($user->isSystemAdmin() && Yii::$app->getModule('content')->adminCanViewAllContent) {
             return true;
         }
 
-        if ($this->visibility === self::VISIBILITY_PRIVATE && $this->getContainer()->canAccessPrivateContent($user)) {
+        if ($this->isPrivate() && $this->getContainer()->canAccessPrivateContent($user)) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Determines if a guest user is able to read this content.
+     * This is the case if all of the following conditions are met:
+     *
+     *  - The content is public
+     *  - The `auth.allowGuestAccess` module setting is enabled
+     *  - The space or profile visibility is set to VISIBILITY_ALL
+     *
+     * @return bool
+     */
+    public function checkGuestAccess()
+    {
+        if(!$this->isPublic() || !Yii::$app->getModule('user')->settings->get('auth.allowGuestAccess')) {
+            return false;
+        }
+
+        // Check container visibility for guests
+        return ($this->container instanceof Space && $this->container->visibility == Space::VISIBILITY_ALL)
+            || ($this->container instanceof User && $this->container->visibility == User::VISIBILITY_ALL);
     }
 
     /**

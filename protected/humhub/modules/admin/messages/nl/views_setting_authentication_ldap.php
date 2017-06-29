@@ -6,6 +6,7 @@ return array (
   'LDAP Attribute for Username. Example: &quotuid&quot; or &quot;sAMAccountName&quot;' => 'LDAP Attribuut voor gebruikersnaam. Voorbeeld: &quotuid&quot; of &quot;sAMAccountName&quot;',
   'Limit access to users meeting this criteria. Example: &quot(objectClass=posixAccount)&quot; or &quot;(&(objectClass=person)(memberOf=CN=Workers,CN=Users,DC=myDomain,DC=com))&quot;' => 'Beperk toegang voor gebruikers die voldoen aan deze criteria. Voorbeeld: &quot(objectClass=posixAccount)&quot; of &quot;(&(objectClass=person)(memberOf=CN=Workers,CN=Users,DC=myDomain,DC=com))&quot;',
   'Save' => 'Bewaar',
+  'Specify your LDAP-backend used to fetch user accounts.' => 'Geef uw LDAP-backend op om gebruikersaccounts op te halen.',
   'Status: Error! (Message: {message})' => 'Status: Error! (Melding: {message})',
   'Status: OK! ({userCount} Users)' => 'Status: OK! ({userCount} gebruikers)',
   'The default base DN used for searching for accounts.' => 'De standaard Base DN die gebruikt wordt voor het zoeken naar accounts.',

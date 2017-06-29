@@ -7,7 +7,7 @@ use yii\base\Model;
 
 /**
  * CachingForm
- * 
+ *
  * @since 0.5
  */
 class CacheSettingsForm extends Model
@@ -33,12 +33,12 @@ class CacheSettingsForm extends Model
      */
     public function rules()
     {
-        return array(
-            array(['type', 'expireTime'], 'required'),
-            array('type', 'checkCacheType'),
-            array('expireTime', 'integer'),
-            array('type', 'in', 'range' => array_keys($this->getTypes())),
-        );
+        return [
+            [['type', 'expireTime'], 'required'],
+            ['type', 'checkCacheType'],
+            ['expireTime', 'integer'],
+            ['type', 'in', 'range' => array_keys($this->getTypes())],
+        ];
     }
 
     /**
@@ -46,10 +46,10 @@ class CacheSettingsForm extends Model
      */
     public function attributeLabels()
     {
-        return array(
+        return [
             'type' => \Yii::t('AdminModule.forms_CacheSettingsForm', 'Cache Backend'),
             'expireTime' => \Yii::t('AdminModule.forms_CacheSettingsForm', 'Default Expire Time (in seconds)'),
-        );
+        ];
     }
 
     /**
@@ -57,11 +57,11 @@ class CacheSettingsForm extends Model
      */
     public function getTypes()
     {
-        return array(
-            'yii\caching\DummyCache' => \Yii::t('AdminModule.forms_CacheSettingsForm', 'No caching (Testing only!)'),
+        return [
+            'yii\caching\DummyCache' => \Yii::t('AdminModule.forms_CacheSettingsForm', 'No caching'),
             'yii\caching\FileCache' => \Yii::t('AdminModule.forms_CacheSettingsForm', 'File'),
-            'yii\caching\ApcCache' => \Yii::t('AdminModule.forms_CacheSettingsForm', 'APC'),
-        );
+            'yii\caching\ApcCache' => \Yii::t('AdminModule.forms_CacheSettingsForm', 'APC(u)'),
+        ];
     }
 
     /**
@@ -69,14 +69,14 @@ class CacheSettingsForm extends Model
      */
     public function checkCacheType($attribute, $params)
     {
-        if ($this->type == 'yii\caching\ApcCache' && !function_exists('apc_add')) {
-            $this->addError($attribute, \Yii::t('AdminModule.forms_CacheSettingsForm', "PHP APC Extension missing - Type not available!"));
+        if ($this->type == 'yii\caching\ApcCache' && !function_exists('apc_add') && !function_exists('apcu_add')) {
+            $this->addError($attribute, \Yii::t('AdminModule.forms_CacheSettingsForm', "PHP APC(u) Extension missing - Type not available!"));
         }
     }
 
     /**
      * Saves the form
-     * 
+     *
      * @return boolean
      */
     public function save()
@@ -87,6 +87,7 @@ class CacheSettingsForm extends Model
         $settingsManager->set('cache.expireTime', $this->expireTime);
 
         \humhub\libs\DynamicConfig::rewrite();
+
         return true;
     }
 

@@ -7,6 +7,7 @@ return array (
   'Search for user, spaces and content' => 'Chercher des utilisateurs, des espaces et des contenus',
   'Search only in certain spaces:' => 'Chercher seulement dans certains espaces :',
   'Spaces' => 'Espaces',
+  'Specify space' => 'Préciser l\'espace',
   'Users' => 'Utilisateurs',
-  'Your search returned no matches.' => 'Votre recherche n\'a donné aucun résultat.',
+  'Your search returned no matches.' => 'Votre recherche n\'a retourné aucun résultat.',
 );

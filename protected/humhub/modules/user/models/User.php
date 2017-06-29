@@ -34,6 +34,7 @@ use humhub\modules\space\models\Space;
  * @property string $last_login
  * @property integer $visibility
  * @property integer $contentcontainer_id
+ * @property Profile $profile
  */
 class User extends ContentContainerActiveRecord implements \yii\web\IdentityInterface, \humhub\modules\search\interfaces\Searchable
 {
@@ -89,7 +90,7 @@ class User extends ContentContainerActiveRecord implements \yii\web\IdentityInte
             [['status', 'visibility'], 'integer'],
             [['tags'], 'string'],
             [['guid'], 'string', 'max' => 45],
-            [['username'], 'string', 'max' => 50, 'min' => Yii::$app->params['user']['minUsernameLength']],
+            [['username'], 'string', 'max' => 50, 'min' => Yii::$app->getModule('user')->minimumUsernameLength],
             [['time_zone'], 'in', 'range' => \DateTimeZone::listIdentifiers()],
             [['auth_mode'], 'string', 'max' => 10],
             [['language'], 'string', 'max' => 5],
@@ -164,8 +165,8 @@ class User extends ContentContainerActiveRecord implements \yii\web\IdentityInte
             'status' => Yii::t('UserModule.models_User', 'Status'),
             'username' => Yii::t('UserModule.models_User', 'Username'),
             'email' => Yii::t('UserModule.models_User', 'Email'),
-            'profile.firstname' => Yii::t('UserModule.models_User', 'Firstname'),
-            'profile.lastname' => Yii::t('UserModule.models_User', 'Lastname'),
+            'profile.firstname' => Yii::t('UserModule.models_Profile', 'First name'),
+            'profile.lastname' => Yii::t('UserModule.models_Profile', 'Last name'),
             'auth_mode' => Yii::t('UserModule.models_User', 'Auth Mode'),
             'tags' => Yii::t('UserModule.models_User', 'Tags'),
             'language' => Yii::t('UserModule.models_User', 'Language'),
@@ -201,7 +202,7 @@ class User extends ContentContainerActiveRecord implements \yii\web\IdentityInte
     /**
      * @inheritdoc
      *
-     * @return ActiveQueryContent
+     * @return \humhub\modules\content\components\ActiveQueryContent
      */
     public static function find()
     {
@@ -437,10 +438,13 @@ class User extends ContentContainerActiveRecord implements \yii\web\IdentityInte
     /**
      * Returns users display name
      *
-     * @return string
+     * @return string the users display name (e.g. firstname + lastname)
      */
     public function getDisplayName()
     {
+        if (Yii::$app->getModule('user')->displayNameCallback !== null) {
+            return call_user_func(Yii::$app->getModule('user')->displayNameCallback, $this);
+        }
 
         $name = '';
 
@@ -469,11 +473,11 @@ class User extends ContentContainerActiveRecord implements \yii\web\IdentityInte
 
         return false;
     }
-    
+
     /**
      * Checks if the given $user instance shares the same identity with this
      * user instance.
-     * 
+     *
      * @param \humhub\modules\user\models\User $user
      * @return boolean
      */
@@ -487,18 +491,21 @@ class User extends ContentContainerActiveRecord implements \yii\web\IdentityInte
      */
     public function canAccessPrivateContent(User $user = null)
     {
-        if ($this->isCurrentUser()) {
+        $user = !$user && !Yii::$app->user->isGuest ? Yii::$app->user->getIdentity() : $user;
+
+        // Guest
+        if(!$user) {
+            return false;
+        }
+
+        // Self
+        if ($user->is($this)) {
             return true;
         }
 
-        if ($user === null) {
-            $user = Yii::$app->user->getIdentity();
-        }
-
-        if ($user !== null && Yii::$app->getModule('friendship')->getIsEnabled()) {
-            if (Friendship::getStateForUser($this, $user) == Friendship::STATE_FRIENDS) {
-                return true;
-            }
+        // Friend
+        if (Yii::$app->getModule('friendship')->getIsEnabled()) {
+            return (Friendship::getStateForUser($this, $user) == Friendship::STATE_FRIENDS);
         }
 
         return false;
@@ -628,16 +635,18 @@ class User extends ContentContainerActiveRecord implements \yii\web\IdentityInte
      * TODO: deprecated
      * @inheritdoc
      */
-    public function getUserGroup()
+    public function getUserGroup(User $user = null)
     {
-        if (Yii::$app->user->isGuest) {
+        $user = !$user && !Yii::$app->user->isGuest ? Yii::$app->user->getIdentity() : $user;
+
+        if (!$user) {
             return self::USERGROUP_GUEST;
-        } elseif (Yii::$app->user->getIdentity()->id === $this->id) {
+        } elseif ($this->is($user)) {
             return self::USERGROUP_SELF;
         }
 
         if (Yii::$app->getModule('friendship')->getIsEnabled()) {
-            if (Friendship::getStateForUser($this, Yii::$app->user->getIdentity()) === Friendship::STATE_FRIENDS) {
+            if (Friendship::getStateForUser($this, $user) === Friendship::STATE_FRIENDS) {
                 return self::USERGROUP_FRIEND;
             }
         }

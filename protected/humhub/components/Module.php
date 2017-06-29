@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2015 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -14,6 +14,7 @@ use yii\helpers\Json;
 /**
  * Base Class for Modules / Extensions
  *
+ * @property SettingsManager $settings
  * @author luke
  */
 class Module extends \yii\base\Module
@@ -56,6 +57,7 @@ class Module extends \yii\base\Module
         if ($info['name']) {
             return $info['name'];
         }
+
         return $this->id;
     }
 
@@ -139,6 +141,7 @@ class Module extends \yii\base\Module
     {
         $path = $this->getAssetPath();
         $publishedPath = Yii::$app->assetManager->getPublishedPath($path);
+
         return $publishedPath !== false && is_file($publishedPath . $relativePath);
     }
 
@@ -173,10 +176,11 @@ class Module extends \yii\base\Module
     {
         $path = $this->getAssetPath();
         $path = Yii::getAlias($path);
+
         return is_string($path) && is_dir($path);
     }
 
-    private function getAssetPath()
+    public function getAssetPath()
     {
         return $this->getBasePath() . '/' . $this->resourcesPath;
     }
@@ -198,12 +202,18 @@ class Module extends \yii\base\Module
      * Disables a module
      *
      * This should delete all data created by this module.
-     * When override this method make sure to invoke the parent implementation AFTER your implementation.
+     * When override this method make sure to invoke call `parent::disable()` **AFTER** your implementation as
+     *
+     * ```php
+     * public function disable()
+     * {
+     *     // custom disable logic
+     *     parent::disable();
+     * }
+     * ```
      */
     public function disable()
     {
-
-
         /**
          * Remove database tables
          */
@@ -220,7 +230,7 @@ class Module extends \yii\base\Module
             try {
                 $migration->up();
             } catch (\yii\db\Exception $ex) {
-                ;
+                Yii::error($ex);
             }
             ob_get_clean();
 
@@ -279,6 +289,7 @@ class Module extends \yii\base\Module
         }
 
         $moduleJson = file_get_contents($this->getBasePath() . DIRECTORY_SEPARATOR . 'module.json');
+
         return Json::decode($moduleJson);
     }
 
@@ -325,6 +336,12 @@ class Module extends \yii\base\Module
         return [];
     }
 
+    /**
+     * Determines whether the module has notification classes or not
+     *
+     * @since 1.2
+     * @return boolean has notifications
+     */
     public function hasNotifications()
     {
         return !empty($this->getNotifications());

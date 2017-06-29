@@ -17,12 +17,16 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
+    'This action is disabled!' => '',
+    'Could not delete content!' => '不能删除内容',
+    'Could not delete content: Access denied!' => '不能删除内容:访问拒绝！',
     'Could not load requested object!' => '无法加载请求对象！',
-    'Maximum number of sticked items reached!
+    'Invalid request method!' => '无效的请求方法！',
+    'Maximum number of pinned items reached!
 
-You can stick only two items at once.
-To however stick this item, unstick another before!' => '粘贴项目达到最大数量！
+You can pin to top only two items at once.
+To however pin this item, unpin another before!' => '到达的置顶的最大条数！
 
-你可以一次只粘贴两个项目。
-任然坚持粘贴这个项目，请先放弃另一个！',
+你一次最多能置顶两条。
+你可以在置顶此条之前先取消一个置顶！',
 ];

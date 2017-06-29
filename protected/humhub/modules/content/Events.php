@@ -11,7 +11,6 @@ namespace humhub\modules\content;
 use Yii;
 use humhub\modules\content\models\Content;
 
-
 /**
  * Events provides callbacks to handle events.
  *
@@ -64,24 +63,6 @@ class Events extends \yii\base\Object
     }
 
     /**
-     * On init of WallEntryControlsWidget add some default widgets to it.
-     *
-     * @param CEvent $event
-     */
-    public static function onWallEntryControlsInit($event)
-    {
-        $stackWidget = $event->sender;
-        $content = $event->sender->object;
-
-        $stackWidget->addWidget(widgets\DeleteLink::className(), ['content' => $content]);
-        $stackWidget->addWidget(widgets\EditLink::className(), ['content' => $content, 'wallEntryWidget' => $stackWidget->wallEntryWidget]);
-        $stackWidget->addWidget(widgets\NotificationSwitchLink::className(), ['content' => $content]);
-        $stackWidget->addWidget(widgets\PermaLink::className(), ['content' => $content]);
-        $stackWidget->addWidget(widgets\PinLink::className(), ['content' => $content]);
-        $stackWidget->addWidget(widgets\ArchiveLink::className(), ['content' => $content]);
-    }
-
-    /**
      * On init of the WallEntryAddonWidget, attach the wall entry links widget.
      *
      * @param CEvent $event
@@ -103,12 +84,14 @@ class Events extends \yii\base\Object
      */
     public static function onSearchRebuild($event)
     {
-        foreach (Content::find()->all() as $content) {
+        foreach (Content::find()->batch() as $contents) {
+            foreach ($contents as $content) {
             $contentObject = $content->getPolymorphicRelation();
             if ($contentObject instanceof \humhub\modules\search\interfaces\Searchable) {
                 Yii::$app->search->add($contentObject);
             }
         }
+    }
     }
 
     /**

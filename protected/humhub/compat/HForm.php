@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2016 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -78,6 +78,7 @@ class HForm extends \yii\base\Component
         }
 
         $this->trigger(self::EVENT_AFTER_VALIDATE);
+
         return !$hasErrors;
     }
 
@@ -137,12 +138,12 @@ class HForm extends \yii\base\Component
                 $output .= $this->renderField($name, $element, $forms);
             }
         }
+
         return $output;
     }
 
     public function renderForm($element)
     {
-
         $class = "";
         if (isset($element['class'])) {
             $class = $element['class'];
@@ -150,7 +151,6 @@ class HForm extends \yii\base\Component
 
         $output = "<fieldset class='" . $class . "'>";
         if (isset($element['title'])) {
-            #$output .= "<h2>" . $element['title'] . "</h2>";
             $output .= "<legend>" . $element['title'] . "</legend>";
         } else {
             #$output .= "Untitled Form";
@@ -173,12 +173,13 @@ class HForm extends \yii\base\Component
                 $output .= "&nbsp;";
             }
         }
+
         return $output;
     }
 
     public function renderField($name, $definition, $forms)
     {
-        if (isset($definition['isVisible']) && !$definition['isVisible'] ) {
+        if (isset($definition['isVisible']) && !$definition['isVisible']) {
             return;
         }
 
@@ -217,17 +218,28 @@ class HForm extends \yii\base\Component
             if (isset($definition['label']) && $definition['label']) {
                 $options['label'] = $definition['label'];
             }
+
+            if (isset($definition['htmlOptions']) && is_array($definition['htmlOptions'])) {
+                $options = array_merge($options, $definition['htmlOptions']);
+            }
+
+            $showLabel = !isset($definition['label']) || $definition['label'] !== false;
+
             if (isset($definition['type'])) {
                 switch ($definition['type']) {
                     case 'text':
-                        return $this->form->field($model, $name)->textInput($options);
+                        $field = $this->form->field($model, $name)->textInput($options);
+                        if (!$showLabel) {
+                            $field->label(false);
+                        }
+                        return $field;
                     case 'multiselectdropdown':
                         return \humhub\widgets\MultiSelectField::widget([
-                            'form' => $this->form,
-                            'model' => $model,
-                            'attribute' => $name,
-                            'items' => $definition['items'], 
-                            'options' => $definition['options']
+                                    'form' => $this->form,
+                                    'model' => $model,
+                                    'attribute' => $name,
+                                    'items' => $definition['items'],
+                                    'options' => $definition['options']
                         ]);
                     case 'dropdownlist':
                         return $this->form->field($model, $name)->dropDownList($definition['items'], $options);
@@ -236,8 +248,22 @@ class HForm extends \yii\base\Component
                             $options['disabled'] = 'disabled';
                         }
                         return $this->form->field($model, $name)->checkbox($options);
+                    case 'checkboxlist':
+                        if (isset($options['readOnly']) && $options['readOnly']) {
+                            $options['disabled'] = 'disabled';
+                        }
+                        $value = $model->$name;
+                        if (is_string($value)) {
+                            $model->$name = explode(',', $model->$name);
+                        }
+
+                        return $this->form->field($model, $name)->checkboxList($definition['items'], $options);
                     case 'textarea':
-                        return $this->form->field($model, $name)->textarea($options);
+                        $field = $this->form->field($model, $name)->textarea($options);
+                        if (!$showLabel) {
+                            $field->label(false);
+                        }
+                        return $field;
                     case 'hidden':
                         return $this->form->field($model, $name)->hiddenInput($options)->label(false);
                     case 'password':
@@ -252,8 +278,15 @@ class HForm extends \yii\base\Component
 
                         return $this->form->field($model, $name)->widget(\yii\jui\DatePicker::className(), [
                                     'dateFormat' => $format,
-                                    'clientOptions' => ['changeYear' => true, 'yearRange' => $yearRange, 'changeMonth' => true, 'disabled' => (isset($options['readOnly']) && $options['readOnly'])],
-                                    'options' => ['class' => 'form-control']]);
+                                    'clientOptions' => [
+                                        'changeYear' => true,
+                                        'yearRange' => $yearRange,
+                                        'changeMonth' => true,
+                                        'disabled' => (isset($options['readOnly']) && $options['readOnly'])
+                                    ],
+                                    'options' => [
+                                        'class' => 'form-control']
+                        ]);
                     case 'markdown':
                         $options['id'] = $name;
                         $returnField = $this->form->field($model, $name)->textarea($options);

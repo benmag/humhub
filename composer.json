@@ -14,8 +14,8 @@
     },
     "minimum-stability": "stable",
     "require": {
-        "php": ">=5.4.0",
-        "yiisoft/yii2": "~2.0.4",
+        "php": ">=5.6.0",
+        "yiisoft/yii2": "~2.0.11",
         "yiisoft/yii2-bootstrap": "~2.0.0",
         "yiisoft/yii2-swiftmailer": "~2.0.0",
         "yiisoft/yii2-authclient": "~2.0.0",
@@ -28,7 +28,7 @@
         "nqxcode/zendsearch": "^2.0",
         "xj/yii2-jplayer-widget": "*",
         "zendframework/zend-ldap": "^2.5",
-        "zhuravljov/yii2-queue": "^0.7",
+        "zhuravljov/yii2-queue": "^0.11",
         "bower-asset/jquery-timeago": "1.4.*",
         "bower-asset/jquery-nicescroll": "3.6.*",
         "bower-asset/jquery-knob": "1.2.*",
@@ -47,7 +47,9 @@
         "bower-asset/animate.css": "*",
         "bower-asset/html5shiv": "^3.7",
         "elasticsearch/elasticsearch": "~2.0",
-        "yiisoft/yii2-elasticsearch": "dev-master"
+        "yiisoft/yii2-elasticsearch": "dev-master",
+        "bower-asset/clipboard.js": "*",
+        "bower-asset/jPlayer": "2.9.2"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "~2.0.0",

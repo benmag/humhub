@@ -23,7 +23,7 @@ class AdminController extends Controller
     /**
      * @inheritdoc
      */
-    public static function getAccessRules()
+    public function getAccessRules()
     {
         return [
             ['permissions' => \humhub\modules\admin\permissions\ManageSettings::className()]
@@ -40,7 +40,9 @@ class AdminController extends Controller
             $this->view->saved();
         }
 
-        return $this->render('defaults', ['model' => $model]);
+        return $this->render('defaults', [
+            'model' => $model
+        ]);
     }
 
 }

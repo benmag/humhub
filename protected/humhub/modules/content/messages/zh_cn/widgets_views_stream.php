@@ -17,9 +17,12 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'Load more' => '加载更多',
-    'No matches with your selected filters!' => '没有符合你筛选条件的数据！',
-    'Nothing here yet!' => '空空如也！',
+    'The content has been archived.' => '内容已被归档。',
+    'The content has been deleted.' => '内容已被删除。',
+    'The content has been pinned.' => '内容已被置顶。',
+    'The content has been unarchived.' => '内容已被解除归档。',
+    'The content has been unpinned.' => '内容已被取消置顶。',
+    'Your last edit state has been saved!' => '你的最新修改已被保存！',
     'Back to stream' => '返回动态',
     'Content with attached files' => '内容含有附件',
     'Created by me' => '我创建的',
@@ -27,6 +30,9 @@ return [
     'Filter' => '筛选',
     'Include archived posts' => '含有归档内容',
     'Last update' => '最后更新',
+    'Load more' => '加载更多',
+    'No matches with your selected filters!' => '没有符合你筛选条件的数据！',
+    'Nothing here yet!' => '空空如也！',
     'Only private posts' => '仅私有内容',
     'Only public posts' => '仅公共内容',
     'Posts only' => '公共内容',

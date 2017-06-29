@@ -17,8 +17,9 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'Mark all as seen' => '',
-    'Notifications' => '',
-    'Show all notifications' => '',
-    'There are no notifications yet.' => '',
+    'Open the notification dropdown menu' => '',
+    'Mark all as seen' => 'Összes olvasottnak jelöl',
+    'Notifications' => 'Értesítések',
+    'Show all notifications' => 'Összes értesítés',
+    'There are no notifications yet.' => 'Még nincsenek értesítések.',
 ];

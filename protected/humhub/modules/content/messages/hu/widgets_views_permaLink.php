@@ -1,7 +1,5 @@
 <?php
 return array (
-  '<strong>Permalink</strong> to this post' => '@@@@',
-  'Close' => 'Zatvori',
-  'Permalink' => '@@@@',
-  'Copy to clipboard: Ctrl+C, Enter' => '',
+  '<strong>Permalink</strong> to this post' => '<strong>Tartalom</strong> linkje',
+  'Permalink' => 'Tartalom linkje',
 );

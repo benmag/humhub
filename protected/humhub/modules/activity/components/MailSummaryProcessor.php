@@ -25,12 +25,14 @@ class MailSummaryProcessor
 
     /**
      * Processes mail summary for given interval
-     * 
+     *
      * @param int $interval
      */
     public static function process($interval)
     {
-        $users = User::find()->distinct()->joinWith(['httpSessions', 'profile'])->where(['user.status' => User::STATUS_ENABLED]);
+        $users = User::find()->distinct()->joinWith(['httpSessions', 'profile'])->where([
+            'user.status' => User::STATUS_ENABLED
+        ]);
 
         $interactive = false;
         $totalUsers = $users->count();
@@ -45,6 +47,10 @@ class MailSummaryProcessor
             if ($interactive) {
                 Console::startProgress($processed, $totalUsers, 'Sending hourly e-mail summary to users... ', false);
             }
+        } elseif ($interval === MailSummary::INTERVAL_WEEKLY) {
+            if ($interactive) {
+                Console::startProgress($processed, $totalUsers, 'Sending weekly e-mail summary to users... ', false);
+            }
         } else {
             return;
         }
@@ -54,7 +60,6 @@ class MailSummaryProcessor
             // Check if user wants summary in the given interval
             try {
                 if (self::checkUser($user, $interval)) {
-
                     $mailSummary = Yii::createObject([
                                 'class' => MailSummary::className(),
                                 'user' => $user,
@@ -68,7 +73,7 @@ class MailSummaryProcessor
                 Yii::error('Could not send activity mail to: ' . $user->displayName . ' (' . $ex->getMessage() . ')', 'activity');
             }
             if ($interactive) {
-                Console::updateProgress(++$processed, $totalUsers);
+                Console::updateProgress( ++$processed, $totalUsers);
             }
         }
 
@@ -80,7 +85,7 @@ class MailSummaryProcessor
 
     /**
      * Checks if a e-mail summary should be send to the user
-     * 
+     *
      * @param User $user
      * @param int $interval
      */

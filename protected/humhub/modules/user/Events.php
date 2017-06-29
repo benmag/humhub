@@ -3,6 +3,7 @@
 namespace humhub\modules\user;
 
 use Yii;
+use humhub\modules\content\models\ContentContainer;
 use humhub\modules\user\models\User;
 use humhub\modules\user\models\Password;
 use humhub\modules\user\models\Profile;
@@ -25,8 +26,10 @@ class Events extends \yii\base\Object
      */
     public static function onSearchRebuild($event)
     {
-        foreach (models\User::find()->active()->all() as $obj) {
-            \Yii::$app->search->add($obj);
+        foreach (models\User::find()->active()->batch() as $users) {
+            foreach ($users as $user) {
+                Yii::$app->search->add($user);
+            }
         }
     }
 
@@ -50,13 +53,22 @@ class Events extends \yii\base\Object
     {
         $integrityController = $event->sender;
 
+        $integrityController->showTestHeadline("User Module - ContentContainer (" . User::find()->count() . " entries)");
+        foreach (User::find()->joinWith(['contentContainerRecord'])->all() as $user) {
+            if ($user->contentContainerRecord === null) {
+                if ($integrityController->showFix("Deleting user " . $user->id . " without content container record!")) {
+                    $user->delete();
+                }
+            }
+        }
+
         $integrityController->showTestHeadline("User Module - Users (" . User::find()->count() . " entries)");
         foreach (User::find()->joinWith(['profile'])->all() as $user) {
-            if ($user->profile == null) {
+            if ($user->profile->isNewRecord) {
                 $integrityController->showWarning("User with id " . $user->id . " has no profile record!");
             }
         }
-        
+
         foreach (GroupUser::find()->joinWith(['user'])->all() as $groupUser) {
             if ($groupUser->user == null) {
                 if ($integrityController->showFix("Deleting group admin " . $groupUser->id . " without existing user!")) {
@@ -116,6 +128,19 @@ class Events extends \yii\base\Object
             if ($module->user == null) {
                 if ($integrityController->showFix("Deleting user-module " . $module->id . " of non existing user!")) {
                     $module->delete();
+                }
+            }
+        }
+
+        $userIds = User::find()->select('id')->asArray()->all();
+        foreach ($userIds as $key => $id) {
+            $userIds[$key] = $id['id'];
+        }
+        $integrityController->showTestHeadline("User Module - Content container (" . ContentContainer::find()->count() . " entries)");
+        foreach (ContentContainer::find()->where(['NOT IN', 'owner_user_id', $userIds])->all() as $contentContainer) {
+            if ($contentContainer['class'] == User::className() && $contentContainer['pk'] == $contentContainer['owner_user_id']) {
+                if ($integrityController->showFix("Deleting content container " . $contentContainer->id . " without existing user!")) {
+                    $contentContainer->delete();
                 }
             }
         }

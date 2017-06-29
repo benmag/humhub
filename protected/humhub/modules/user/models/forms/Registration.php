@@ -24,6 +24,10 @@ use humhub\modules\user\models\GroupUser;
  */
 class Registration extends HForm
 {
+    /**
+     * @event \yii\web\UserEvent triggered after successful registration.
+     */
+    const EVENT_AFTER_REGISTRATION = 'afterRegistration';
 
     /**
      * @var boolean show password creation form
@@ -169,7 +173,11 @@ class Registration extends HForm
             $groupFieldType = "hidden";
             $defaultUserGroup = $groupModels[0]->id;
         }
-
+        
+        if(!$defaultUserGroup && empty($groupModels)) {
+            $groupFieldType = "hidden";
+        }
+        
         return [
             'type' => 'form',
             'elements' => [
@@ -263,6 +271,8 @@ class Registration extends HForm
                 \humhub\modules\user\authclient\AuthClientHelpers::storeAuthClientForUser($authClient, $this->models['User']);
                 $authClient->trigger(\humhub\modules\user\authclient\BaseClient::EVENT_CREATE_USER, new \yii\web\UserEvent(['identity' => $this->models['User']]));
             }
+
+            $this->trigger(self::EVENT_AFTER_REGISTRATION, new \yii\web\UserEvent(['identity' => $this->models['User']]));
 
             return true;
         }

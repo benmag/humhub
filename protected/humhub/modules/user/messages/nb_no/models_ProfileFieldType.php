@@ -17,14 +17,15 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
-    'Datetime' => '',
-    'Markdown' => '',
-    'Number' => '',
-    'Select List' => '',
+    'Checkbox List' => '',
     'Birthday' => 'Bursdag',
+    'Checkbox' => 'Avkrysningsboks',
     'Country' => 'Land',
     'Date' => 'Dato',
+    'Datetime' => 'Datetime',
+    'Markdown' => 'Markdown',
+    'Number' => 'Tall',
+    'Select List' => 'Select-boks',
     'Text' => 'Tekst',
-    'Text Area' => 'Tekst Område',
-    'Checkbox' => '',
+    'Text Area' => 'Tekstfelt',
 ];

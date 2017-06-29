@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2015 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -32,13 +32,6 @@ class FileController extends \humhub\components\Controller
             'acl' => [
                 'class' => AccessControl::className(),
                 'guestAllowedActions' => ['download']
-            ],
-            'httpCache' => [
-                'class' => 'yii\filters\HttpCache',
-                'cacheControlHeader' => 'public, max-age=31536000',
-                'etagSeed' => function ($action, $params) {
-                    return serialize([\yii\helpers\Url::current()]);
-                },
             ],
         ];
     }
@@ -74,7 +67,7 @@ class FileController extends \humhub\components\Controller
         }
 
         $file->delete();
-        
+
         Yii::$app->response->format = 'json';
         return ['success' => true];
     }

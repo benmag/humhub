@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2015 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -77,7 +77,7 @@ class BasePermission extends \yii\base\Object
 
     /**
      * Optional contentContainer instance to improve title and description.
-     * 
+     *
      * @since 1.2
      * @var \humhub\modules\content\components\ContentContainerActiveRecord
      */
@@ -141,7 +141,7 @@ class BasePermission extends \yii\base\Object
     {
         $configuredState = $this->getConfiguredState($groupId);
 
-        if ($configuredState != null) {
+        if ($configuredState !== null) {
             return $configuredState;
         } else if ($this->defaultState == self::STATE_ALLOW) {
             return self::STATE_ALLOW;

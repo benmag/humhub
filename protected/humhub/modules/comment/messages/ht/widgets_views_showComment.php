@@ -19,8 +19,10 @@
 return [
     '<strong>Confirm</strong> comment deleting' => '',
     'Cancel' => '',
+    'Cancel Edit' => '',
+    'Comment has been deleted' => '',
     'Delete' => '',
     'Do you really want to delete this comment?' => '',
     'Edit' => '',
-    'Updated :timeago' => '',
+    'Read full comment...' => '',
 ];

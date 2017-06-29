@@ -4,9 +4,9 @@ Developement Guide
 Getting Started
 ---------------
 * [Overview](overview.md)
-* [Git/Composer Installation](git-installation.md)
+* [Git Installation](git-installation.md)
 * [Development Environment](environment.md)
-
+* [Coding Standards](coding-standards.md)
 
 Module Development
 ------------------
@@ -19,6 +19,18 @@ Module Development
 * [Models / Database](modules-db.md)
 * [Internationalization](modules-i18n.md)
 
+Javascript API
+------------------
+ * [Modules](javascript-index.md)
+ * [Components](javascript-components.md)
+ * [Additions](javascript-uiadditions.md)
+ * [Actions](javascript-actions.md)
+ * [Client](javascript-client.md)
+ * [Modals](javascript-modals.md)
+ * [Events](javascript-events.md)
+
+
+
 Special Topics
 --------------
 * [Notifications](notifications.md)
@@ -30,7 +42,3 @@ Special Topics
 * [Permissions](permissions.md)
 * [Widgets](widgets.md)
 
-Core Development
-----------------
-* [Build assets](core-build-assets.md)
-* [Coding Standards](core-coding-standards.md)

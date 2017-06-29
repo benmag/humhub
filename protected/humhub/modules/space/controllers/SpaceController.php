@@ -65,7 +65,7 @@ class SpaceController extends \humhub\modules\content\components\ContentContaine
     {
         $space = $this->getSpace();
 
-        if (Yii::$app->request->get('tour')) {
+        if (Yii::$app->request->get('tour') || Yii::$app->request->get('contentId')) {
             return $this->actionHome();
         }
 
@@ -107,6 +107,10 @@ class SpaceController extends \humhub\modules\content\components\ContentContaine
      */
     public function actionFollow()
     {
+        if(Yii::$app->getModule('space')->disableFollow) {
+            throw new \yii\web\HttpException(403, Yii::t('ContentModule.controllers_ContentController', 'This action is disabled!'));
+        }
+        
         $this->forcePostRequest();
         $space = $this->getSpace();
 
@@ -157,7 +161,7 @@ class SpaceController extends \humhub\modules\content\components\ContentContaine
         $title = Yii::t('SpaceModule.base', '<strong>Space</strong> followers');
         return $this->renderAjaxContent(UserListBox::widget(['query' => $query, 'title' => $title]));
     }
-
+   
 }
 
 ?>

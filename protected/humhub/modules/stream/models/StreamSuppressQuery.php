@@ -3,7 +3,6 @@
 namespace humhub\modules\stream\models;
 
 use Yii;
-use humhub\modules\stream\models\StreamQuery;
 
 /**
  * StreamSuppressQuery detects same content types in a row and trims the output.
@@ -158,8 +157,16 @@ class StreamSuppressQuery extends StreamQuery
      */
     protected function isSuppressed(&$results, $content)
     {
+        // Do not surpress if only particual contents are displayed
+        if (!empty($this->_includes)) {
+            return false;
+        }
+
+        /* @var $streamModule \humhub\modules\stream\Module */
+        $streamModule = Yii::$app->getModule('stream');
+
         // Check if content type is suppressable
-        if (in_array($content->object_model, Yii::$app->getModule('stream')->streamSuppressQueryIgnore)) {
+        if (in_array($content->object_model, array_merge($streamModule->streamSuppressQueryIgnore, $streamModule->defaultStreamSuppressQueryIgnore))) {
             return false;
         }
 

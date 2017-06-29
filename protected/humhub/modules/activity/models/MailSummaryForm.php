@@ -97,7 +97,7 @@ class MailSummaryForm extends Model
 
     /**
      * Returns available modes how to handle given spaces
-     * 
+     *
      * @return array the modes
      */
     public function getLimitSpaceModes()
@@ -110,7 +110,7 @@ class MailSummaryForm extends Model
 
     /**
      * Returns a list of available mail summary intervals
-     * 
+     *
      * @return array the intervals
      */
     public function getIntervals()
@@ -118,13 +118,14 @@ class MailSummaryForm extends Model
         return [
             MailSummary::INTERVAL_NONE => Yii::t('ActivityModule.base', 'Never'),
             MailSummary::INTERVAL_HOURY => Yii::t('ActivityModule.base', 'Hourly'),
-            MailSummary::INTERVAL_DAILY => Yii::t('ActivityModule.base', 'Daily')
+            MailSummary::INTERVAL_DAILY => Yii::t('ActivityModule.base', 'Daily'),
+            MailSummary::INTERVAL_WEEKLY => Yii::t('ActivityModule.base', 'Weekly'),
         ];
     }
 
     /**
      * Returns an array of all possible activities for the checkboxLis
-     * 
+     *
      * @return array
      */
     public function getActivitiesArray()
@@ -141,10 +142,10 @@ class MailSummaryForm extends Model
 
     /**
      * Loads the current values into this model
-     * 
+     *
      * If the 'user' attribute is set, the user settings are loaded if present.
      * Otherwise the system defaults will be loaded.
-     * 
+     *
      * @return boolean
      */
     public function loadCurrent()
@@ -170,7 +171,7 @@ class MailSummaryForm extends Model
 
     /**
      * Saves the current model values to the current user or globally.
-     * 
+     *
      * @return boolean success
      */
     public function save()
@@ -202,7 +203,7 @@ class MailSummaryForm extends Model
 
     /**
      * Resets all settings stored for the current user
-     * 
+     *
      * @throws Exception
      */
     public function resetUserSettings()

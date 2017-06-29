@@ -24,7 +24,7 @@ $this->registerJsConfig('space.chooser', [
 <li class="dropdown">
     <a href="#" id="space-menu" class="dropdown-toggle" data-toggle="dropdown">
         <!-- start: Show space image and name if chosen -->
-        <?php if ($currentSpace) { ?>
+        <?php if ($currentSpace) : ?>
             <?=
             \humhub\modules\space\widgets\Image::widget([
                 'space' => $currentSpace,
@@ -34,7 +34,7 @@ $this->registerJsConfig('space.chooser', [
             ]]);
             ?>
             <b class="caret"></b>
-        <?php } ?>
+        <?php endif; ?>
 
         <?php if (!$currentSpace) : ?>
             <?= $noSpaceView ?>
@@ -46,7 +46,9 @@ $this->registerJsConfig('space.chooser', [
         <li>
             <form action="" class="dropdown-controls">
                 <div class="input-group">
-                    <input type="text" id="space-menu-search" class="form-control" autocomplete="off" placeholder="<?php echo Yii::t('SpaceModule.widgets_views_spaceChooser', 'Search'); ?>">
+                    <input type="text" id="space-menu-search" class="form-control" autocomplete="off" 
+                           placeholder="<?= Yii::t('SpaceModule.widgets_views_spaceChooser', 'Search'); ?>"
+                           title="<?= Yii::t('SpaceModule.widgets_views_spaceChooser', 'Search for spaces'); ?>">
                     <span id="space-directory-link" class="input-group-addon" >
                         <a href="<?= Url::to(['/directory/directory/spaces']); ?>">
                         <i class="fa fa-book"></i>
@@ -71,16 +73,15 @@ $this->registerJsConfig('space.chooser', [
         <li class="remoteSearch">
             <ul id="space-menu-remote-search" class="media-list notLoaded"></ul>
         </li>
-</li>
 
-<?php if ($canCreateSpace): ?>
-    <li>
-        <div class="dropdown-footer">
-            <a href="#" class="btn btn-info col-md-12" data-action-click="ui.modal.load" data-action-url="<?= Url::to(['/space/create/create']) ?>">
-                <?= Yii::t('SpaceModule.widgets_views_spaceChooser', 'Create new space') ?>
-            </a>
-        </div>
-    </li>
-<?php endif; ?>
-</ul>
+    <?php if ($canCreateSpace): ?>
+        <li>
+            <div class="dropdown-footer">
+                <a href="#" class="btn btn-info col-md-12" data-action-click="ui.modal.load" data-action-url="<?= Url::to(['/space/create/create']) ?>">
+                    <?= Yii::t('SpaceModule.widgets_views_spaceChooser', 'Create new space') ?>
+                </a>
+            </div>
+        </li>
+    <?php endif; ?>
+    </ul>
 </li>

@@ -17,9 +17,20 @@
  * NOTE: this file must be saved in UTF-8 encoding.
  */
 return [
+    'Crop profile background' => '',
+    'Crop profile image' => '',
+    'Current Password' => '',
+    'Delete profile image' => '',
+    'Missing E-Mail Attribute from AuthClient.' => '',
+    'Missing ID AuthClient Attribute from AuthClient.' => '',
+    'Sign in / up' => '',
+    'Unknown user status!' => '',
+    'Upload profile banner' => '',
+    'Upload profile image' => '',
     'You\'re not registered.' => '',
+    'Your account is disabled!' => '',
+    'Your account is not approved yet!' => '',
     'Your new password must not equal your current password!' => '',
-    '<strong>Security</strong> settings' => '<strong>تنظيمات امنيتي</strong>',
     'Basic Settings' => 'تنظيمات پايه',
     'Change Email' => 'تغيير ايميل',
     'Change Password' => 'تغيير پسورد',
@@ -44,8 +55,8 @@ return [
     'Profile' => 'پروفایل',
     'Security' => 'امنيتي',
     'Settings' => 'تنطیمات',
+    'Sign in' => 'ورود',
     'User' => 'کاربر',
     'User with the same email already exists but isn\'t linked to you. Login using your email first to link it.' => 'ايميل ديگري موجود است كه متعلق به شما نيست',
     'or' => 'يا',
-    'Current Password' => '',
 ];

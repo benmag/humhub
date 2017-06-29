@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2016 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -23,38 +23,45 @@ use humhub\modules\space\models\Space;
  */
 class ModuleController extends Controller
 {
+
     /**
      * @inheritdoc
      */
     public $adminOnly = false;
-
     private $_onlineModuleManager = null;
 
     /**
      * @inheritdoc
      */
-    public function init() {
+    public function init()
+    {
         $this->appendPageTitle(Yii::t('AdminModule.base', 'Modules'));
+
         return parent::init();
     }
-    
-    public static function getAccessRules()
+
+    /**
+     * @inheritdoc
+     */
+    public function getAccessRules()
     {
         return [
             ['permissions' => \humhub\modules\admin\permissions\ManageModules::className()]
         ];
     }
-    
+
     public function actionIndex()
     {
         Yii::$app->moduleManager->flushCache();
+
         return $this->redirect(['/admin/module/list']);
     }
 
     public function actionList()
     {
         $installedModules = Yii::$app->moduleManager->getModules();
-        return $this->render('list', array('installedModules' => $installedModules));
+
+        return $this->render('list', ['installedModules' => $installedModules]);
     }
 
     /**
@@ -140,7 +147,7 @@ class ModuleController extends Controller
             }
 
             if (!is_writable($module->getBasePath())) {
-                throw new HttpException(500, Yii::t('AdminModule.controllers_ModuleController', 'Module path %path% is not writeable!', array('%path%' => $module->getPath())));
+                throw new HttpException(500, Yii::t('AdminModule.controllers_ModuleController', 'Module path %path% is not writeable!', ['%path%' => $module->getPath()]));
             }
 
             Yii::$app->moduleManager->removeModule($module->id);
@@ -182,7 +189,7 @@ class ModuleController extends Controller
         $modules = $onlineModules->getModules();
 
         if ($keyword != "") {
-            $results = array();
+            $results = [];
             foreach ($modules as $module) {
                 if (stripos($module['name'], $keyword) !== false || stripos($module['description'], $keyword) !== false) {
                     $results[] = $module;
@@ -191,7 +198,7 @@ class ModuleController extends Controller
             $modules = $results;
         }
 
-        return $this->render('listOnline', array('modules' => $modules, 'keyword' => $keyword));
+        return $this->render('listOnline', ['modules' => $modules, 'keyword' => $keyword]);
     }
 
     /**
@@ -202,7 +209,7 @@ class ModuleController extends Controller
         $onlineModules = $this->getOnlineModuleManager();
         $modules = $onlineModules->getModuleUpdates();
 
-        return $this->render('listUpdates', array('modules' => $modules));
+        return $this->render('listUpdates', ['modules' => $modules]);
     }
 
     /**
@@ -212,35 +219,34 @@ class ModuleController extends Controller
     {
         $hasError = false;
         $message = "";
-        
+
         $licenceKey = Yii::$app->request->post('licenceKey', "");
         if ($licenceKey != "") {
             $result = \humhub\modules\admin\libs\HumHubAPI::request('v1/modules/registerPaid', ['licenceKey' => $licenceKey]);
             if (!isset($result['status'])) {
                 $hasError = true;
                 $message = 'Could not connect to HumHub API!';
-            } elseif ($result['status'] == 'ok' || $result['status'] == 'created' ) {
+            } elseif ($result['status'] == 'ok' || $result['status'] == 'created') {
                 $message = 'Module licence added!';
                 $licenceKey = "";
             } else {
                 $hasError = true;
                 $message = 'Invalid module licence key!';
             }
-                
         }
-        
+
         // Only showed purchased modules
         $onlineModules = $this->getOnlineModuleManager();
         $modules = $onlineModules->getModules(false);
-        
-        
+
+
         foreach ($modules as $i => $module) {
             if (!isset($module['purchased']) || !$module['purchased']) {
                 unset($modules[$i]);
             }
         }
 
-        return $this->render('listPurchases', array('modules' => $modules, 'licenceKey' => $licenceKey, 'hasError' => $hasError, 'message' => $message));
+        return $this->render('listPurchases', ['modules' => $modules, 'licenceKey' => $licenceKey, 'hasError' => $hasError, 'message' => $message]);
     }
 
     /**
@@ -264,7 +270,7 @@ class ModuleController extends Controller
             $readmeMd = file_get_contents($readmeMdFile);
         }
 
-        return $this->renderAjax('info', array('name' => $module->getName(), 'description' => $module->getDescription(), 'content' => $readmeMd));
+        return $this->renderAjax('info', ['name' => $module->getName(), 'description' => $module->getDescription(), 'content' => $readmeMd]);
     }
 
     /**
@@ -274,10 +280,9 @@ class ModuleController extends Controller
      */
     public function actionThirdpartyDisclaimer()
     {
-        return $this->renderAjax('thirdpartyDisclaimer', array());
+        return $this->renderAjax('thirdpartyDisclaimer', []);
     }
-    
-    
+
     /**
      * Sets default enabled/disabled on User or/and Space Modules
      *
@@ -295,17 +300,14 @@ class ModuleController extends Controller
             throw new HttpException(500, 'Invalid module type!');
         }
 
-
-
         $model = new \humhub\modules\admin\models\forms\ModuleSetAsDefaultForm();
 
         $spaceDefaultModule = null;
         if ($module->hasContentContainerType(Space::className())) {
-            $spaceDefaultModule = \humhub\modules\space\models\Module::findOne(['space_id' => 0, 'module_id' => $moduleId]);
+            $spaceDefaultModule = \humhub\modules\space\models\Module::find()->where(['module_id' => $moduleId])->andWhere(['IS', 'space_id', new \yii\db\Expression('NULL')])->one();
             if ($spaceDefaultModule === null) {
                 $spaceDefaultModule = new \humhub\modules\space\models\Module();
                 $spaceDefaultModule->module_id = $moduleId;
-                $spaceDefaultModule->space_id = 0;
                 $spaceDefaultModule->state = \humhub\modules\space\models\Module::STATE_DISABLED;
             }
             $model->spaceDefaultState = $spaceDefaultModule->state;
@@ -313,32 +315,34 @@ class ModuleController extends Controller
 
         $userDefaultModule = null;
         if ($module->hasContentContainerType(User::className())) {
-            $userDefaultModule = \humhub\modules\user\models\Module::findOne(['user_id' => 0, 'module_id' => $moduleId]);
+            $userDefaultModule = \humhub\modules\user\models\Module::find()->where(['module_id' => $moduleId])->andWhere(['IS', 'user_id', new \yii\db\Expression('NULL')])->one();
             if ($userDefaultModule === null) {
                 $userDefaultModule = new \humhub\modules\user\models\Module();
                 $userDefaultModule->module_id = $moduleId;
-                $userDefaultModule->user_id = 0;
                 $userDefaultModule->state = \humhub\modules\user\models\Module::STATE_DISABLED;
             }
             $model->userDefaultState = $userDefaultModule->state;
         }
 
-
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($module->hasContentContainerType(Space::className())) {
                 $spaceDefaultModule->state = $model->spaceDefaultState;
-                $spaceDefaultModule->save();
+                if (!$spaceDefaultModule->save()) {
+                    throw new HttpException('Could not save: ' . print_r($spaceDefaultModule->getErrors(), 1));
+                }
             }
 
             if ($module->hasContentContainerType(User::className())) {
                 $userDefaultModule->state = $model->userDefaultState;
-                $userDefaultModule->save();
+                if (!$userDefaultModule->save()) {
+                    throw new HttpException('Could not save: ' . print_r($userDefaultModule->getErrors(), 1));
+                }
             }
 
             return $this->renderModalClose();
         }
 
-        return $this->renderAjax('setAsDefault', array('module' => $module, 'model' => $model));
+        return $this->renderAjax('setAsDefault', ['module' => $module, 'model' => $model]);
     }
 
     public function getOnlineModuleManager()

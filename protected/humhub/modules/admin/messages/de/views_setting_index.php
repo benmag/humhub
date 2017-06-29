@@ -1,7 +1,6 @@
 <?php
 return array (
-  '<strong>Confirm</strong> image deleting' => '<strong>Bestätige</strong> Bildlöschung',
-  'Cancel' => 'Abbrechen',
+  '<strong>Confirm</strong> image deletion' => 'Löschen des Bildes <strong>bestätigen</strong>',
   'Dashboard' => 'Übersicht',
   'Delete' => 'Löschen',
   'E.g. http://example.com/humhub' => 'z.B. http://example.com/humhub',

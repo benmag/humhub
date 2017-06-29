@@ -15,5 +15,11 @@ return array (
   'Posts only' => 'Nur Beiträge',
   'Posts with links' => 'Beiträge mit Links',
   'Sorting' => 'Sortierung',
+  'The content has been archived.' => 'Der Inhalt wurde archiviert.',
+  'The content has been deleted.' => 'Der Inhalt wurde gelöscht.',
+  'The content has been pinned.' => 'Der Inhalt wurde angeheftet.',
+  'The content has been unarchived.' => 'Der Inhalt wurde dearchiviert.',
+  'The content has been unpinned.' => 'Die Anheftung des Inhalts wurde aufgehoben.',
   'Where I´m involved' => 'Wo ich involviert bin',
+  'Your last edit state has been saved!' => 'Dein letzter Bearbeitungsstand wurde gespeichert.',
 );

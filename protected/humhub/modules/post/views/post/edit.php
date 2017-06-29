@@ -21,13 +21,14 @@ use humhub\compat\CActiveForm;
             'model' => $post,
             'dropZone' => '#post_edit_' . $post->id . ':parent',
             'preview' => '#post_upload_preview_' . $post->id,
-            'progress' => '#post_upload_progress_' . $post->id
+            'progress' => '#post_upload_progress_' . $post->id,
+            'max' => Yii::$app->getModule('content')->maxAttachedFiles
         ])
         ?>
 
         <!-- editSubmit action of surrounding StreamEntry component -->
         <button type="submit" class="btn btn-default btn-sm btn-comment-submit" data-ui-loader data-action-click="editSubmit" data-action-url="<?= $post->content->container->createUrl('/post/post/edit', ['id' => $post->id]) ?>">
-<?= Yii::t('PostModule.views_edit', 'Save') ?>
+            <?= Yii::t('PostModule.views_edit', 'Save') ?>
         </button>
 
     </div>

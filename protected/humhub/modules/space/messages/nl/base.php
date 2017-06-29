@@ -1,11 +1,11 @@
 <?php
 return array (
-  '<strong>Space</strong> followers' => '<strong>Space</strong> volgers',
+  '<strong>Space</strong> followers' => '<strong>Ruimte</strong> volgers',
   'Could not delete user who is a space owner! Name of Space: {spaceName}' => 'De eigenaar van ruimte {spaceName} kan niet verwijderd worden!',
   'Default' => 'Standaard',
   'Everyone can enter' => 'Iedereen kan lid worden',
   'Invite and request' => 'Uitnodigen en aanvragen',
-  'No spaces found.' => 'Geen spaces gevonden',
+  'No spaces found.' => 'Geen ruimtes gevonden',
   'Only by invite' => 'Alleen door uitnodiging',
   'Private' => 'Privé',
   'Private (Invisible)' => 'Privaat (Onzichtbaar)',
@@ -15,6 +15,6 @@ return array (
   'Public (Registered users only)' => 'Publiek (Alleen geregistreerde gebruikers)',
   'Public (Visible)' => 'Publiek (Zichtbaar)',
   'Settings' => 'Instellingen',
-  'Space' => 'Space',
+  'Space' => 'Ruimte',
   'Visible for all (members and guests)' => 'Zichtbaar voor iedereen (leden en gasten)',
 );

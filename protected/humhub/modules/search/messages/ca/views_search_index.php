@@ -7,6 +7,7 @@ return array (
   'Search for user, spaces and content' => '',
   'Search only in certain spaces:' => '',
   'Spaces' => 'Espais',
-  'Users' => '',
+  'Specify space' => '',
+  'Users' => 'Usuaris',
   'Your search returned no matches.' => '',
 );

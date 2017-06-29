@@ -8,6 +8,7 @@
 
 namespace humhub\modules\space\models;
 
+use humhub\modules\space\widgets\Members;
 use Yii;
 
 use humhub\modules\space\permissions\CreatePrivateSpace;
@@ -45,10 +46,10 @@ class Space extends ContentContainerActiveRecord implements \humhub\modules\sear
     const JOIN_POLICY_NONE = 0; // No Self Join Possible
     const JOIN_POLICY_APPLICATION = 1; // Invitation and Application Possible
     const JOIN_POLICY_FREE = 2; // Free for All
-    // Visibility
-    const VISIBILITY_NONE = 0; // Always invisible
-    const VISIBILITY_REGISTERED_ONLY = 1; // Only for registered members
-    const VISIBILITY_ALL = 2; // Visible for all (also guests)
+    // Visibility: Who can view the space content.
+    const VISIBILITY_NONE = 0; // Private: This space is invisible for non-space-members
+    const VISIBILITY_REGISTERED_ONLY = 1; // Only registered users (no guests)
+    const VISIBILITY_ALL = 2; // Public: All Users (Members and Guests)
     // Status
     const STATUS_DISABLED = 0;
     const STATUS_ENABLED = 1;
@@ -362,10 +363,10 @@ class Space extends ContentContainerActiveRecord implements \humhub\modules\sear
         $this->status = self::STATUS_ENABLED;
         $this->save();
     }
-    
+
     /**
      * Returns wether or not a Space is archived.
-     * 
+     *
      * @return boolean
      * @since 1.2
      */
@@ -439,13 +440,15 @@ class Space extends ContentContainerActiveRecord implements \humhub\modules\sear
     /**
      * @inheritdoc
      */
-    public function canAccessPrivateContent(\humhub\modules\user\models\User $user = null)
+    public function canAccessPrivateContent(User $user = null)
     {
-        if (Yii::$app->getModule('space')->globalAdminCanAccessPrivateContent && Yii::$app->user->getIdentity()->isSystemAdmin()) {
+        $user = !$user && !Yii::$app->user->isGuest ? Yii::$app->user->getIdentity() : $user;
+
+        if (Yii::$app->getModule('space')->globalAdminCanAccessPrivateContent && $user->isSystemAdmin()) {
             return true;
         }
 
-        return ($this->isMember());
+        return ($this->isMember($user));
     }
 
     /**
@@ -515,19 +518,24 @@ class Space extends ContentContainerActiveRecord implements \humhub\modules\sear
     }
 
     /**
-     * Returns current users group
-     *
-     * @return string user group id
+     * @inheritdoc
      */
-    public function getUserGroup()
+    public function getUserGroup(User $user = null)
     {
-        if (Yii::$app->user->isGuest) {
+        $user = !$user && !Yii::$app->user->isGuest ? Yii::$app->user->getIdentity() : $user;
+
+        if (!$user) {
             return self::USERGROUP_GUEST;
-        } elseif ($this->getMembership() !== null && $this->getMembership()->status == Membership::STATUS_MEMBER) {
-            if ($this->isSpaceOwner($this->getMembership()->user_id)) {
+        }
+
+        /* @var  $membership  Membership */
+        $membership = $this->getMembership($user);
+
+        if ($membership && $membership->isMember()) {
+            if ($this->isSpaceOwner($user->id)) {
                 return self::USERGROUP_OWNER;
             }
-            return $this->getMembership()->group_id;
+            return $membership->group_id;
         } else {
             return self::USERGROUP_USER;
         }

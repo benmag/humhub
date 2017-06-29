@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2016 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -28,6 +28,10 @@ class Application extends \yii\console\Application
      */
     public function init()
     {
+        if (version_compare(phpversion(), '5.6', '<')) {
+            throw new \yii\console\Exception('Installed PHP Version is too old! Required minimum version is PHP 5.6 (Installed: ' . phpversion() . ')');
+        }
+
         parent::init();
         $this->trigger(self::EVENT_ON_INIT);
 
@@ -53,6 +57,7 @@ class Application extends \yii\console\Application
                 if (isset($urlParts['port'])) {
                     $hostInfo .= ':' . $urlParts['port'];
                 }
+
                 $this->urlManager->hostInfo = $hostInfo;
             }
         }

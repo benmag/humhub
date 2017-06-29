@@ -1,13 +1,12 @@
 <?php
 return array (
-  '<strong>Information</strong>' => '',
-  '<strong>Settings</strong> and Configuration' => '',
-  '<strong>User</strong> administration' => '',
-  'Add new group' => '',
-  'Back to overview' => '',
+  '<strong>Information</strong>' => '<strong>Informace</strong>',
+  '<strong>Settings</strong> and Configuration' => '<strong>Nastavení</strong> a konfigurace',
+  '<strong>User</strong> administration' => '<strong>Administace</strong> uživatelů',
+  'Add new group' => 'Přidat novou skupinu',
   'Groups' => 'Skupiny',
-  'Manage group: {groupName}' => '',
+  'Manage group: {groupName}' => 'Spravovat skupinu: {groupName}',
   'Overview' => 'Přehled',
-  'Pending approvals' => '',
-  'Profiles' => '',
+  'Pending approvals' => 'Čekající požadavky na schválení',
+  'Profiles' => 'Profily',
 );

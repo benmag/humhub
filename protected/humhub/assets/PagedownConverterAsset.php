@@ -2,7 +2,7 @@
 
 /**
  * @link https://www.humhub.org/
- * @copyright Copyright (c) 2015 HumHub GmbH & Co. KG
+ * @copyright Copyright (c) 2017 HumHub GmbH & Co. KG
  * @license https://www.humhub.com/licences
  */
 
@@ -12,7 +12,7 @@ use yii\web\AssetBundle;
 
 /**
  * jquery-highlight
- * 
+ *
  * @author buddha
  */
 class PagedownConverterAsset extends AssetBundle
@@ -33,7 +33,7 @@ class PagedownConverterAsset extends AssetBundle
      */
     public $js = [
         'resources/js/pagedown/Markdown.Converter.js',
-        'resources/js/pagedown/Markdown.Editor.js',
+        'resources/js/pagedown/Markdown.Sanitizer.js',
         'resources/js/pagedown/Markdown.Extra.js',
     ];
 
