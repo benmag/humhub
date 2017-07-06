@@ -36,3 +36,4 @@ favicon.ico
 /protected/vendor/
 
 storage/*
+data/*
