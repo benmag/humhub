@@ -17,7 +17,6 @@ namespace humhub\widgets;
 
 
 use humhub\components\Widget;
-use humhub\libs\Html;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 
@@ -29,10 +28,16 @@ use yii\helpers\Url;
 class Link extends Button
 {
 
-    public $link = true;
+    public $_link = true;
 
-    public function to($url)
+    public static function to($text, $url = '#', $pjax = true) {
+        return self::asLink($text, $url)->pjax($pjax);
+    }
+
+    public function href($url = '#', $pjax = true)
     {
         $this->link($url);
+        $this->pjax($pjax);
+        return $this;
     }
 }
