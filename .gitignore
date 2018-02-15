@@ -20,6 +20,7 @@ uploads/profile_image/*
 uploads/profile_image/banner/*
 !uploads/profile_image/banner/.gitignore
 
+.env
 .htaccess
 .htpasswd
 nbproject
