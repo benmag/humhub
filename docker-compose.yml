@@ -1,0 +1,49 @@
+###########################################################################
+# Docker Compose File
+###########################################################################
+#
+# Your Docker Compose file spins up your application's environment.
+# It defines all of the services, network links and volumes to
+# be used by your application. Modify this file as required.
+#
+version: '2'
+services:
+  app:
+    build: .
+    volumes:
+      - ./:/app
+    ports:
+      - "8080:80"
+      # - "443:443"
+    env_file:
+         - .env
+    links:
+      - mysql
+      - elasticsearch
+    
+  mysql:
+    image: mysql
+    volumes:
+      - ./storage/data/mysql:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: demo
+      MYSQL_USER: demo
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+    command: --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+    
+  elasticsearch:
+    image: elasticsearch:2
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./data/es-humhub:/usr/share/elasticsearch/data:rw
+
+  ghost: 
+    image: ghost
+    ports: 
+      - "3000:2368"
+    volumes: 
+      - ./data/ghost:/var/lib/ghost/content

@@ -1,0 +1,59 @@
+###########################################################################
+# Docker Compose File
+###########################################################################
+#
+# Your Docker Compose file spins up your application's environment.
+# It defines all of the services, network links and volumes to
+# be used by your application. Modify this file as required.
+#
+version: '2'
+services:
+  app:
+    build: .
+    volumes:
+      - ./:/app
+    ports:
+      - "8080:80"
+      # - "443:443"
+    env_file:
+         - .env
+    links:
+      - mysql
+      - elasticsearch
+
+  mysql:
+    image: tutum/mysql
+    volumes:
+      - /usr/local/mysql/data/:/var/lib/mysql:rw
+    ports:
+      - "3306:3306"
+    env_file:
+         - .env
+
+  mysqlbackup:
+    image: deitch/mysql-backup
+    restart: always
+    env_file:
+         - .env
+    volumes:
+      - /home/ubuntu/backups:/home
+      - /usr/local/mysql/data:/db
+    links:
+      - mysql:db
+
+  elasticsearch:
+    image: elasticsearch:2
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - /usr/share/elasticsearch:/usr/share/elasticsearch/data:rw
+
+  ghost:
+    image: ghost
+    ports:
+      - "5000:2368"
+    volumes:
+      - /var/lib/ghost/content:/var/lib/ghost/content
+    environment:
+      url: "http://blog.dev.tq.sixb.it"
