@@ -13,8 +13,7 @@ services:
     volumes:
       - ./:/app
     ports:
-      - "8080:80"
-      # - "443:443"
+      - "3000:80"
     env_file:
          - .env
     links:
